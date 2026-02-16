@@ -80,23 +80,22 @@ RunTest(function()
 end)
 
 RunTest(function()
-	local Part = Instance.new("Part")
-	Part:SetAttribute("modified", "hooked")
+	local Test = {Value = ""}
 	local Original
-	Original = hookmetamethod(Part, "__namecall", newcclosure(function(self, ...)
+	Original = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
 		local Args = {...}
 		local Method = getnamecallmethod()
 
-		if Method == "GetAttribute" then
-			Args[1] = "modified"
+		if Method == "Example" then
+			Support.hookmetamethod = true
+			hookmetamethod(game, "__namecall", Original)
 		end
 		return Original(self, table.unpack(Args))
 	end))
-
-	if Part:GetAttribute("test") == "hooked" then
-		Support.hookmetamethod = true
-		hookmetamethod(Part, "__namecall", Original)
-	end
+	pcall(function()
+		game:Example()
+        game:Test()
+	end)
 end)
 
 RunTest(function()
