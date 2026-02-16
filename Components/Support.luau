@@ -95,6 +95,7 @@ RunTest(function()
 
 	if Part:GetAttribute("test") == "hooked" then
 		Support.hookmetamethod = true
+		hookmetamethod(Part, "__namecall", Original)
 	end
 end)
 
