@@ -52,6 +52,12 @@ RunTest(function()
 end)
 
 RunTest(function()
+	if typeof(gethui()) == "Instance" and gethui() ~= game:GetService("CoreGui") then
+		Support.gethui = true
+	end
+end)
+
+RunTest(function()
 	local TestFunction = function()
 		return 10
 	end
