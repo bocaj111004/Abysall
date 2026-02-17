@@ -80,34 +80,25 @@ RunTest(function()
 end)
 
 RunTest(function()
-	local Test = {Value = ""}
+	local Test = setmetatable({}, {__index = function() return true end})
 	local Original
-	Original = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
-		local Args = {...}
-		local Method = getnamecallmethod()
-
-		if Method == "Example" then
-			Support.hookmetamethod = true
-		end
-		return Original(self, table.unpack(Args))
-	end))
-	pcall(function()
-		game:Example()
-		hookmetamethod(game, "__namecall", Original)
-	end)
+	Original = hookmetamethod(Test, "__index", function() return false end)
+	if Test.Value == false and Original() == true then
+		Support.hookmetamethod = true
+	end
 end)
 
 RunTest(function()
 	local TestFunction = function()
 		return 1
 	end
-	
+
 	local TestHook = function()
 		return 10
 	end
-	
+
 	hookfunction(TestFunction, TestHook)
-	
+
 	local Original
 	Original = hookfunction(gcinfo, function()
 		return 666
@@ -123,10 +114,10 @@ RunTest(function()
 		return true
 	end
 	local TestTable = {}
-	
+
 	local WithTables = getgc(true)
 	local WithoutTables = getgc(false)
-	
+
 	if table.find(WithTables, TestTable) and table.find(WithTables, TestFunction) and table.find(WithoutTables, TestFunction) and not table.find(WithoutTables, TestTable) then
 		Support.getgc = true
 	end
