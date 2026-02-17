@@ -88,12 +88,12 @@ RunTest(function()
 
 		if Method == "Example" then
 			Support.hookmetamethod = true
-			hookmetamethod(game, "__namecall", Original)
 		end
 		return Original(self, table.unpack(Args))
 	end))
 	pcall(function()
 		game:Example()
+		hookmetamethod(game, "__namecall", Original)
 	end)
 end)
 
