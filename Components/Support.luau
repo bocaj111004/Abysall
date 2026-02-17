@@ -94,8 +94,42 @@ RunTest(function()
 	end))
 	pcall(function()
 		game:Example()
-        game:Test()
 	end)
+end)
+
+RunTest(function()
+	local TestFunction = function()
+		return 1
+	end
+	
+	local TestHook = function()
+		return 10
+	end
+	
+	hookfunction(TestFunction, TestHook)
+	
+	local Original
+	Original = hookfunction(gcinfo, function()
+		return 666
+	end)
+	if TestFunction() == 10 and gcinfo() == 666 then
+		Support.hookfunction = true
+		hookfunction(gcinfo, Original)
+	end
+end)
+
+RunTest(function()
+	local TestFunction = function()
+		return true
+	end
+	local TestTable = {}
+	
+	local WithTables = getgc(true)
+	local WithoutTables = getgc(false)
+	
+	if table.find(WithTables, TestTable) and table.find(WithTables, TestFunction) and table.find(WithoutTables, TestFunction) and not table.find(WithoutTables, TestTable) then
+		Support.getgc = true
+	end
 end)
 
 RunTest(function()
