@@ -23,7 +23,7 @@ return function()
 			return OldDebug(...)
 		end
 	end)
-    if found == true then
+    if Found == true then
     	return "Success"
     else
     	return "Not found"
