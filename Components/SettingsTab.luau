@@ -4,7 +4,7 @@ local SaveManager = Abysall.Interface.SaveManager
 local ThemeManager = Abysall.Interface.ThemeManager
 
 local Toggles = Library.Toggles
-local Options = library.Options
+local Options = Library.Options
 
 local MenuGroup = Tab:AddLeftGroupbox("Menu")
 
