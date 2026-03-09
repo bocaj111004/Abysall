@@ -3,5 +3,5 @@ local BaseUrl = "https://raw.githubusercontent.com/mstudio45/Obsidian/refs/heads
 return {
   Library = loadstring(game:HttpGet(BaseUrl .. "Library.lua"))(),
   SaveManager = loadstring(game:HttpGet(BaseUrl .. "addons/SaveManager.lua"))(),
-  ThemeManager = loadstring(game:HttpGet(BaseUrl .. "adons/ThemeManager.lua"))()
+  ThemeManager = loadstring(game:HttpGet(BaseUrl .. "addons/ThemeManager.lua"))()
 }
