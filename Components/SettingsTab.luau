@@ -7,7 +7,7 @@ local Toggles = Library.Toggles
 local Options = Library.Options
 
 local SettingsTab = Window:AddTab("Settings", "settings")
-local MenuGroup = Tab:AddLeftGroupbox("Menu")
+local MenuGroup = SettingsTab:AddLeftGroupbox("Menu")
 
 MenuGroup:AddToggle("KeybindMenuOpen", {
 	Default = Library.KeybindFrame.Visible,
