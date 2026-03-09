@@ -1,4 +1,4 @@
-return function(Tab)
+return function(Window)
 local Library = Abysall.Interface.Library
 local SaveManager = Abysall.Interface.SaveManager
 local ThemeManager = Abysall.Interface.ThemeManager
@@ -6,6 +6,7 @@ local ThemeManager = Abysall.Interface.ThemeManager
 local Toggles = Library.Toggles
 local Options = Library.Options
 
+local SettingsTab = Window:AddTab("Settings", "settings")
 local MenuGroup = Tab:AddLeftGroupbox("Menu")
 
 MenuGroup:AddToggle("KeybindMenuOpen", {
@@ -51,7 +52,7 @@ MenuGroup:AddButton("Unload", function()
 	Library:Unload()
 end)
 
-Library.ToggleKeybind = Options.MenuKeybind -- Allows you to have a custom keybind for the menu
+Library.ToggleKeybind = Options.MenuKeybind
 
 ThemeManager:SetLibrary(Library)
 SaveManager:SetLibrary(Library)
@@ -59,7 +60,7 @@ SaveManager:IgnoreThemeSettings()
 SaveManager:SetIgnoreIndexes({ "MenuKeybind" })
 ThemeManager:SetFolder("Abysall")
 SaveManager:SetFolder("Abysall" .. Abysall.SavePath)
-SaveManager:BuildConfigSection(Tabs["UI Settings"])
-ThemeManager:ApplyToTab(Tabs["UI Settings"])
+SaveManager:BuildConfigSection(SettingsTab)
+ThemeManager:ApplyToTab(SettingsTab)
 SaveManager:LoadAutoloadConfig()
 end
