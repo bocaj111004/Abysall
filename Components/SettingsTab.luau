@@ -1,4 +1,11 @@
 return function(Tab)
+local Library = Abysall.Interface.Library
+local SaveManager = Abysall.Interface.SaveManager
+local ThemeManager = Abysall.Interface.ThemeManager
+
+local Toggles = Library.Toggles
+local Options = library.Options
+
 local MenuGroup = Tab:AddLeftGroupbox("Menu")
 
 MenuGroup:AddToggle("KeybindMenuOpen", {
