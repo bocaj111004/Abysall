@@ -547,10 +547,10 @@ local Found2 = false
 
 assert(#FilesList == 2, "Did not return the correct number of files")
 for Index, File in pairs(FilesList) do
-if File == "Abysall_ListFiles_Test/Test1" or File == "Abysall_ListFiles_Test\\Test1" then
+if Global.isfile(File) then
     Found1 = true
 end
-if File == "Abysall_ListFiles_Test/Test2" or File == "Abysall_ListFiles_Test\\Test2" then
+if Global.isfolder(File) then
     Found2 = true
 end
 end
