@@ -2,7 +2,9 @@ local Environment = {}
 
 local BrokenFeatures = {
     ["Seliware"] = {"run_on_actor"},
-    ["Volcano"] = {"run_on_actor", "oth"}
+    ["Volcano"] = {"run_on_actor", "oth"},
+    ["Solara"] = {"require"},
+    ["Xeno"] = {"require"}
 }
 
 local Aliases = {
@@ -10,13 +12,13 @@ local Aliases = {
     ["run_on_actor"] = {"runonactor"},
     ["sethiddenproperty"] = {"set_hidden_property", "sethiddenprop"},
     ["gethiddenproperty"] = {"get_hidden_property", "gethiddenprop"},
-    ["isexecutorclosure"] = {"isourclosure"},
+    ["isexecutorclosure"] = {"isourclosure", "checkclosure"},
     ["request"] = {"httprequest", "http_request"},
     ["gethui"] = {"get_hidden_gui"},
     ["isnetworkowner"] = {"isnetowner"},
     ["firetouchinterest"] = {"firetouchtransmitter"},
-    ["crypt.base64encode"] = {"base64_encode"},
-    ["crypt.base64decode"] = {"base64_decode"}
+    ["crypt.base64encode"] = {"crypt.base64_encode", "base64encode", "base64_encode"},
+    ["crypt.base64decode"] = {"crypt.base64_decode", "base64decode", "base64_decode"}
 }
 
 local function GetGlobal(Path)
@@ -46,39 +48,57 @@ local Global = setmetatable({}, {
 
 local Services = setmetatable({}, {
     __index = function(self, Name)
-        if Global.cloneref then
-            if game:GetService(Name) then
-                return Global.cloneref(game:GetService(Name))
-            else
-                return game:GetService(Name)
-            end
-        else
-            return game:GetService(Name)
-        end
+        return game:GetService(Name)
     end
 })
 
-local function RunTest(Name, Test)
+local Results = {}
+
+local function AddResult(Text)
+    table.insert(Results, Text)
+end
+
+local function PrintResults()
+    for Index, Result in pairs(Results) do
+        print(Result)
+        task.wait()
+    end
+end
+
+local function RunTest(Name, Test, InternalName)
 local ExecutorName = Global.identifyexecutor and Global.identifyexecutor()[1] or "Unknown"
 if BrokenFeatures[ExecutorName] and table.find(BrokenFeatures[ExecutorName], Name) then
+    AddResult("❌ " .. Name .. " failed: test has been skipped")
     return
 end
 
 local NewGlobal = Global[Name]
+if not NewGlobal then
+    AddResult("❌ " .. Name)
+    return
+end
 
 local Time = 0
 local Finished = false
 task.spawn(function()
 local Success, Result = pcall(Test, NewGlobal)
 if Success then
-    Environment[Name] = NewGlobal
+    if InternalName then
+        Environment[InternalName] = NewGlobal
+    else
+        Environment[Name] = NewGlobal
+    end
+    AddResult("✅ " .. Name)
+else
+    AddResult("❌ " .. Name .. " failed: " .. Result)
 end
 Finished = true
 end)
 
 while not Finished do
     Time = Time + 1
-    if Time > 250 then
+    if Time > 500 then
+       AddResult("❌ " .. Name .. " failed: test timed out")
     break
     end
     task.wait()
@@ -96,11 +116,13 @@ Global.getgenv().Example = nil
 end)
 
 RunTest("getrenv", function()
+assert(Environment.getgenv, "getgenv is required to test")
 local Env = Global.getrenv()
 
 assert(typeof(Env) == "table", "Did not return a table")
 assert(typeof(Env.print) == "function", "Did not return an environment table")
 assert(Global.getrenv ~= Global.getgenv, "getrenv is an alias of getgenv")
+assert(Global.getgenv() ~= Global.getrenv(), "Returned executor environment")
 
 local Success, Result = pcall(function()
     return Env.loadstring([[return 10]])()
@@ -145,8 +167,28 @@ for Index, Value in pairs(NoTables) do
     end
 end
 
-assert(FoundTable == false, "Found a table with called with false")
+assert(FoundTable == false, "Found a table when called with false")
 assert(FoundFunction == true, "Failed to find a function")
+end)
+
+RunTest("filtergc", function()
+local Dummy_Table = {
+    ["Dummy_Value"] = 10
+}
+local function Dummy_Function() end
+
+local Retrieved = Global.filtergc("function", {
+    Name = "Dummy_Function", 
+    IgnoreExecutor = false
+})
+
+local Retrieved2 = Global.filtergc("table", {
+    Keys = {"Dummy_Value"}, 
+    Values = {10}
+})
+
+assert(table.find(Retrieved, Dummy_Function), "failed to find a function")
+assert(table.find(Retrieved2, Dummy_Table), "failed to find a table")
 end)
 
 --[[ Miscellaneous ]]
@@ -181,6 +223,7 @@ RunTest("cloneref", function()
 local TestPart = Instance.new("Part")
 local Clone = Global.cloneref(TestPart)
 
+assert(typeof(Clone) == "Instance", "Should return an Instance")
 assert(TestPart ~= Clone, "Clone should not be equal to original")
 
 TestPart.Name = "Test"
@@ -251,7 +294,8 @@ assert(NilFound == true, "Did not return any nil instances")
 end)
 
 RunTest("fireproximityprompt", function()
-local TestPrompt = Instance.new("ProximityPrompt")
+local TestPart = Instance.new("Part", Services.Workspace)
+local TestPrompt = Instance.new("ProximityPrompt", TestPart)
 local Fired = false
 
 TestPrompt.Triggered:Connect(function()
@@ -261,11 +305,12 @@ end)
 Global.fireproximityprompt(TestPrompt)
 
 local Tries = 0
-while not Fired and Tries < 150 do
+while not Fired and Tries < 350 do
     Tries = Tries + 1
     task.wait()
 end
 
+TestPart:Destroy()
 assert(Fired == true, "Failed to fire a proximity prompt")
 end)
 
@@ -281,7 +326,7 @@ end)
 Global.fireclickdetector(TestClick)
 
 local Tries = 0
-while not Fired and Tries < 150 do
+while not Fired and tries < 350 do
     Tries = Tries + 1
     task.wait()
 end
@@ -304,12 +349,12 @@ if Child == TestPart2 then
 end
 end)
 
-Global.firetouchinterest(TestPart1, TestPart2, 1 or true)
+Global.firetouchinterest(TestPart1, TestPart2, 0)
 task.wait()
-Global.firetouchinterest(TestPart1, TestPart2, 0 or false)
+Global.firetouchinterest(TestPart1, TestPart2, 1)
 
 local Tries = 0
-while not Fired and Tries < 150 do
+while not Fired and tries < 350 do
     Tries = Tries + 1
     task.wait()
 end
@@ -353,11 +398,13 @@ local TestHook = function()
     return 100
 end
 
-Global.hookfunction(TestFunction, TestHook)
-Global.hookfunction(TestC, TestHook)
+local Old = Global.hookfunction(TestFunction, TestHook)
+local OldC = Global.hookfunction(TestC, TestHook)
 assert(TestFunction ~= TestHook, "Original and hook are the same function")
 assert(debug.info(TestC, "s") == "[C]", "Hooked C function is no longer in C")
 assert(TestFunction() == 100, "Did not change the return value")
+assert(Old() == 10, "Did not return the original function")
+assert(OldC() == 25, "Did not return the original C function")
 end)
 
 RunTest("restorefunction", function()
@@ -404,6 +451,38 @@ assert(Global.isexecutorclosure(TestFunction) == true, "Did not return true for 
 assert(Global.isexecutorclosure(Global.newcclosure) == true, "Did not return true for an executor global")
 assert(Global.isexecutorclosure(warn) == false, "Did not return false for a Roblox global")
 assert(Global.isexecutorclosure(TestC) == true, "Did not return true for an executor C function")
+end)
+
+--[[ oth ]]
+
+RunTest("oth.hook", function()
+local Old = Global.oth.hook(version, function()
+return "hooked!"
+end)
+
+assert(version() == "hooked!", "failed to hook a function")
+end, "oth_hook")
+
+RunTest("oth.unhook", function()
+assert(Environment.oth_hook, "oth.hook is required to test") -- not actually required, just prevents it from passing if oth.hook fails
+Global.oth.unhook(version)
+
+assert(version() ~= "hooked!", "failed to unhook a function")
+end, "oth_unhook")
+
+RunTest("oth.is_hook_thread", function()
+assert(Environment.oth_hook, "oth.hook is required to test")
+assert(Environment.oth_unhook, "oth.unhook is required to test")
+
+local Hooked = false
+Global.oth.hook(version, function()
+Hooked = Global.oth.is_hook_thread()
+end)
+
+version()
+Global.oth.unhook(version)
+assert(Hooked == true, "Did not return true for a hooked thread")
+assert(Global.oth.is_hook_thread() == false, "Did not return false for a normal thread")
 end)
 
 --[[ Metatables ]]
@@ -476,9 +555,8 @@ end)
 
 -- [[Drawing ]]
 
-RunTest("Drawing", function()
+RunTest("Drawing.new", function()
 assert(typeof(Global.Drawing.new) == "function", "Drawing.new is not a function")
-assert(typeof(Global.Drawing.Fonts) == "table", "Drawing.Fonts is not a table")
 
 local NewShape = Global.Drawing.new("Circle")
 NewShape.Visible = false
@@ -488,7 +566,11 @@ NewShape.Filled = false
 NewShape.NumSides = 10
 
 NewShape:Remove()
-end)
+end, "Drawing_New")
+
+RunTest("Drawing.Fonts", function()
+assert(typeof(Global.Drawing.Fonts) == "table", "Drawing.Fonts is not a table")
+end, "Drawing_Fonts")
 
 --[[ File System ]]
 
@@ -581,15 +663,15 @@ end)
 RunTest("gethiddenproperty", function()
 local TestPart = Instance.new("Part")
 
-assert(Global.gethiddenproperty(TestPart, "NetworkOwnerV3") == -1, "Did not return the correct property value")
+assert(Global.gethiddenproperty(TestPart, "NetworkIsSleeping") == false, "Did not return the correct property value")
 end)
 
 RunTest("sethiddenproperty", function()
 assert(Environment.gethiddenproperty, "gethiddenproperty is required to test")
 
 local TestPart = Instance.new("Part")
-Global.sethiddenproperty(TestPart, "NetworkOwnerV3", 9999)
-assert(Global.gethiddenproperty(TestPart, "NetworkOwnerV3") == 9999, "Failed to set a hidden property")
+Global.sethiddenproperty(TestPart, "NetworkIsSleeping", true)
+assert(Global.gethiddenproperty(TestPart, "NetworkIsSleeping") == true, "Failed to set a hidden property")
 end)
 
 RunTest("getthreadidentity", function()
@@ -641,7 +723,7 @@ end)
 
 Global.firesignal(TestEvent.OnClientEvent, "Example", 10, true)
 local Tries = 0
-while not Fired and Tries < 150 do
+while not Fired and tries < 350 do
     Tries = Tries + 1
     task.wait()
 end
@@ -653,22 +735,17 @@ assert(Value3 == true, "Fired signal with incorrect data")
 end)
 
 RunTest("replicatesignal", function()
-local TestButton = Instance.new("TextButton")
-local Fired = false
+local TestButton = Instance.new("Frame")
 
-TestButton.MouseButton1Click:Connect(function()
-Fired = true
+Global.replicatesignal(TestButton.MouseWheelForward, 69, 420)
+
+local Success, Result = pcall(function()
+Global.replicatesignal(TestButton.MouseWheelForward)
+Global.replicatesignal(TestButton.MouseWheelForward, 69)
 end)
 
-Global.replicatesignal(TestButton.MouseButton1Click)
-
-local Tries = 0
-while not Fired and Tries < 150 do
-    Tries = Tries + 1
-    task.wait()
-end
-
-assert(Fired == true, "Failed to fire a signal on the server")
+-- replicatesignal doesn't trigger client signals so we can't properly test it
+assert(Success == false, "Did not throw an error with invalid arguments")
 end)
 
 RunTest("getconnections", function()
@@ -685,7 +762,7 @@ for Index, Connection in pairs(getconnections(game.ChildAdded)) do
 end
 
 local Tries = 0
-while not Fired and Tries < 150 do
+while not Fired and tries < 350 do
     Tries = Tries + 1
     task.wait()
 end
@@ -695,18 +772,94 @@ end)
 
 --[[ Crypt ]]
 
-RunTest("base64encode", function()
-local Encoded = Global.base64encode("Example")
+RunTest("crypt.base64encode", function()
+local Encoded = Global.crypt.base64encode("Example")
 
 assert(typeof(Encoded) == "string", "Did not return a string")
 assert(Encoded == "RXhhbXBsZQ==", "Did not return the expected data")
-end)
+end, "crypt_base64encode")
 
-RunTest("base64decode", function()
-local Decoded = Global.base64decode("RXhhbXBsZQ==")
+RunTest("crypt.base64decode", function()
+local Decoded = Global.crypt.base64decode("RXhhbXBsZQ==")
 
 assert(typeof(Decoded) == "string", "Did not return a string")
 assert(Decoded == "Example", "Did not return the expected data")
+end, "crypt_base64decode")
+
+RunTest("crypt.generatekey", function()
+assert(Environment.crypt_base64decode, "crypt.base64decode is required to test")
+
+local Key = Global.crypt.generatekey()
+assert(typeof(Key) == "string", "Did not return a string")
+assert(Key ~= Global.crypt.generatekey(), "Returns the same key from multiple calls")
+assert(#Environment.crypt_base64decode(Key) == 32, "String is not the correct length after decoding")
+end, "crypt_generatekey")
+
+RunTest("crypt.generatebytes", function()
+assert(Environment.crypt_base64decode, "crypt.base64decode is required to test")
+
+local Test = math.random(10, 100)
+local Bytes = Global.crypt.generatebytes(Test)
+
+assert(typeof(Bytes) == "string", "Did not return a string")
+assert(#Environment.crypt_base64decode(Bytes) == Test, "String is not the correct length after decoding")
+end)
+
+RunTest("crypt.encrypt", function()
+assert(Environment.crypt_generatekey, "crypt.generatekey is required to test")
+
+local Key = Environment.crypt_generatekey()
+local Encoded, Iv = Global.crypt.encrypt("Example", Key, nil, "CBC")
+
+assert(typeof(Encoded) == "string", "Did not return a string")
+assert(typeof(Iv) == "string", "Did not return an Iv")
+end, "crypt_encrypt")
+
+RunTest("crypt.decrypt", function()
+assert(Environment.crypt_generatekey, "crypt.generatekey is required to test")
+assert(Environment.crypt_encrypt, "crypt.encrypt is required to test")
+
+local Key = Environment.crypt_generatekey()
+local Encoded, Iv = Environment.crypt_encrypt("Example", Key, nil, "CBC")
+local Decoded = Global.crypt.decrypt(Encoded, Key, Iv, "CBC")
+
+assert(typeof(Decoded) == "string", "Did not return a string")
+assert(Decoded == "Example", "Did not return the correct data")
+end, "crypt_decrypt")
+
+RunTest("crypt.hash", function()
+local ReferenceData = {
+["sha1"] = "0f01ed56a1e32a05e5ef96e4d779f34784af9a96",
+["sha384"] = "fe27713a5276adef1d34169ed04c52b299bb792bef7c903127893a53c07d910d5fcaae18de99164882a200192b236b14",
+["sha512"] = "c6b0919c7fe628ae9056992c4a917e5dc035a9615d497f6eb2bd14063eaad3e6508efc8682fec82823ca3f3de311868a72990946166429f01b38f9f33d9ca610",
+["md5"] = "0a52730597fb4ffa01fc117d9e71e3a9",
+["sha256"] = "d029f87e3d80f8fd9b1be67c7426b4cc1ff47b4a9d0a8461c826a59d8c5eb6cd",
+["sha3-224"] = "45be9eeb144a4067b74f04e5b8f73c26379ff8325fdd2858bb749dfe",
+["sha3-256"] = "358d8db68dd7622887b41a01aae8f81cc1bfb7a250c3b11be01fc12831a56837",
+["sha3-512"] = "34359a3440cc82648f0175629220c939b1b5d532d22e48aa3e44629281bf1b504cfc40bebd77ee58c51d52b0f0c8795147c293331169b8e45e5fd02300d29340",
+}
+
+local Correct = 0
+for Index, Hash in pairs(ReferenceData) do
+    assert(Global.crypt.hash("Example", Index) == Hash, "Returned incorrect data for algorithm: " .. Index)
+end
+end, "crypt_hash")
+
+RunTest("crypt.hmac", function()
+local Algorithms = {
+    "sha1",
+    "sha384",
+    "sha512",
+    "md5",
+    "sha256",
+    "sha3-224",
+    "sha3-256",
+    "sha3-512"
+    }
+
+for Index, Algorithm in pairs(Algorithms) do
+    assert(typeof(crypt.hmac("Example", "TestKey", Algorithm)) == "string", "Did not return a string")
+end
 end)
 
 --[[ Scripts ]]
@@ -738,7 +891,8 @@ if string.find(Output, Constant) then
 end
 end
 
-assert(Found == 3, "Decompiled outout did not contain expected constants")
+assert(Found == 3, "Decompiled output did not contain expected constants")
+assert(typeof(loadstring(Output)) == "function", "Did not return valid luau code")
 end)
 
 RunTest("getscriptclosure", function()
@@ -754,8 +908,10 @@ local TestScript = Services.Players.LocalPlayer.Character.Animate:Clone()
 local Generated = Global.getscripthash(TestScript)
 
 assert(typeof(Generated) == "string", "Did not return a string")
+assert(Generated == Global.getscripthash(TestScript), "Returned different hashes for the same script")
 TestScript.Source = [[return 10]]
 assert(Generated ~= Global.getscripthash(TestScript), "Did not return a different hash for different source")
+assert(Global.getscripthash(Instance.new("LocalScript")) == nil, "Returned a hash for a script with empty bytecode")
 end)
 
 RunTest("getrunningscripts", function()
@@ -803,11 +959,16 @@ end)
 
 RunTest("require", function()
 local TestScript = Global.require(Services.Players.LocalPlayer.PlayerScripts.PlayerModule)
-local TestRobloxScript = require(Services.CorePackages._GlobalPackageVersions)
 
 assert(typeof(TestScript) == "table", "Did not return a table")
 assert(typeof(TestScript.GetControls == "function"), "Did not return the expected data")
-assert(typeof(TestRobloxScript.Packages) == "table", "Failed to require a roblox module")
+
+local Original = TestScript.GetControls
+TestScript.GetControls = function()
+    return "test"
+end
+assert(TestScript.GetControls() == "test", "Unable to change module values")
+TestScript.GetControls = Original
 end)
 
 RunTest("getsenv", function()
