@@ -1,4 +1,7 @@
 local Environment = {}
+local Tested = 0
+local Failed = 0
+local Passed = 0
 
 local BrokenFeatures = {
     ["Seliware"] = {"run_on_actor"},
@@ -58,23 +61,31 @@ local function AddResult(Text)
     table.insert(Results, Text)
 end
 
-local function PrintResults()
+Environment.PrintResults = function()
+    local Executor = Environment.identifyexecutor and Environment.identifyexecutor() or "Unknown"
+    print("Test Result")
     for Index, Result in pairs(Results) do
         print(Result)
         task.wait()
     end
+    print("Executor - " .. Executor)
+    print("Tests passed: " .. Passed .. "/" .. Tested)
+    print("Test score: " .. math.round((Passed / Tested) * 100) .. "%")
 end
 
 local function RunTest(Name, Test, InternalName)
+Tested = Tested + 1
 local ExecutorName = Global.identifyexecutor and Global.identifyexecutor()[1] or "Unknown"
 if BrokenFeatures[ExecutorName] and table.find(BrokenFeatures[ExecutorName], Name) then
     AddResult("❌ " .. Name .. " failed: test has been skipped")
+    Failed = Failed + 1
     return
 end
 
 local NewGlobal = Global[Name]
 if not NewGlobal then
     AddResult("❌ " .. Name)
+    Failed = Failed + 1
     return
 end
 
@@ -89,8 +100,10 @@ if Success then
         Environment[Name] = NewGlobal
     end
     AddResult("✅ " .. Name)
+    Passed = Passed + 1
 else
     AddResult("❌ " .. Name .. " failed: " .. Result)
+    Failed = Failed + 1
 end
 Finished = true
 end)
@@ -99,6 +112,7 @@ while not Finished do
     Time = Time + 1
     if Time > 500 then
        AddResult("❌ " .. Name .. " failed: test timed out")
+       Failed = Failed + 1
     break
     end
     task.wait()
@@ -326,7 +340,7 @@ end)
 Global.fireclickdetector(TestClick)
 
 local Tries = 0
-while not Fired and tries < 350 do
+while not Fired and Tries < 350 do
     Tries = Tries + 1
     task.wait()
 end
@@ -354,14 +368,14 @@ task.wait()
 Global.firetouchinterest(TestPart1, TestPart2, 1)
 
 local Tries = 0
-while not Fired and tries < 350 do
+while not Fired and Tries < 350 do
     Tries = Tries + 1
     task.wait()
 end
 
-assert(Fired == true, "Failed to fire a touch interest")
 TestPart1:Destroy()
 TestPart2:Destroy()
+assert(Fired == true, "Failed to fire a touch interest")
 end)
 
 --[[ Closures ]]
@@ -723,7 +737,7 @@ end)
 
 Global.firesignal(TestEvent.OnClientEvent, "Example", 10, true)
 local Tries = 0
-while not Fired and tries < 350 do
+while not Fired and Tries < 350 do
     Tries = Tries + 1
     task.wait()
 end
@@ -762,7 +776,7 @@ for Index, Connection in pairs(getconnections(game.ChildAdded)) do
 end
 
 local Tries = 0
-while not Fired and tries < 350 do
+while not Fired and Tries < 350 do
     Tries = Tries + 1
     task.wait()
 end
