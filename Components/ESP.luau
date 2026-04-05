@@ -69,7 +69,7 @@ end
 
 local CloneReference = (cloneref and cloneref or function(Object) return Object end)
 local Players = CloneReference(game:GetService("Players"))
-local CoreGui = (game:FindFirstChild("CoreGui") and CloneReference(game:GetService("CoreGui")) or Players.LocalPlayer.PlayerGui)
+local CoreGui = (getgenv and CloneReference(game:GetService("CoreGui")) or Players.LocalPlayer.PlayerGui)
 local function GetHiddenUI()
 	if gethui then
 		return gethui()
@@ -522,8 +522,8 @@ function Library:RemoveESP(Object)
 				ArrowsTable[Object]:Destroy()
 				ArrowsTable[Object] = nil
 			end
-			if Connections[Object] then
-				Connections[Object]:Disconnect()
+			if ConnectionsTable[Object] then
+				ConnectionsTable[Object]:Disconnect()
 			end
 			if Library.Lines[Object] ~= nil then
 				if Library.Lines[Object][1] ~= nil  then
@@ -554,8 +554,8 @@ function Library:RemoveESP(Object)
 					Frames[Object] = nil
 				end
 				RemoveObjectFromTables(Object)
-				if Connections[Object] then
-					Connections[Object]:Disconnect()
+				if ConnectionsTable[Object] then
+					ConnectionsTable[Object]:Disconnect()
 				end
 				if ArrowsTable[Object] then
 					ArrowsTable[Object]:Destroy()
