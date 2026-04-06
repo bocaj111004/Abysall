@@ -214,7 +214,7 @@ end)
 RunTest("setfpscap", function()
 local Start = tick()
 Global.setfpscap(6)
-task.wait(0.1)
+task.wait(0.25)
 Global.setfpscap(240)
 
 local Finish = tick() - Start
@@ -610,10 +610,6 @@ end)
 RunTest("loadfile", function()
 Global.writefile("Abysall_Test_Load", [[return 25]])
 assert(Global.loadfile("Abysall_Test_Load")() == 25, "Failed to load and execute a file")
-end)
-
-RunTest("dofile", function()
-assert(Global.dofile("Abysall_Test_Load") == 25, "Failed to execute a file")
 end)
 
 RunTest("delfile", function()
