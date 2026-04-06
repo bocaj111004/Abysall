@@ -76,7 +76,7 @@ end
 
 local function RunTest(Name, Test, InternalName)
 Tested = Tested + 1
-local ExecutorName = Global.identifyexecutor and Global.identifyexecutor()[1] or "Unknown"
+local ExecutorName = Global.identifyexecutor and Global.identifyexecutor() or "Unknown"
 if BrokenFeatures[ExecutorName] and table.find(BrokenFeatures[ExecutorName], Name) then
     AddResult("❌ " .. Name .. " failed: test has been skipped")
     Failed = Failed + 1
@@ -704,7 +704,7 @@ RunTest("isnetworkowner", function()
 local Test = Instance.new("Part", Services.Workspace)
 local TestPart
 for Index, Part in pairs(game:GetDescendants()) do
-    if Part:IsA("BasePart") then
+    if Part:IsA("BasePart") and Part.Anchored then
         TestPart = Part
         break
     end
