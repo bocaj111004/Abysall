@@ -1,4 +1,4 @@
-local BaseUrl = "https://raw.githubusercontent.com/mstudio45/LinoriaLib/refs/heads/main/"
+local BaseUrl = "https://raw.githubusercontent.com/mstudio45/Obsidian/refs/heads/main/"
 local AbysallUrl = "https://raw.githubusercontent.com/bocaj111004/Abysall/refs/heads/main/"
 
 return {
