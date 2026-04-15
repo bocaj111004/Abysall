@@ -1,4 +1,5 @@
 local Environment = {}
+local Log = {}
 local Tested = 0
 local Failed = 0
 local Passed = 0
@@ -9,20 +10,6 @@ local BrokenFeatures = {
 	["Madium"] = {"hookfunction"},
     ["Solara"] = {"require"},
     ["Xeno"] = {"require"}
-}
-
-local Aliases = {
-    ["hookfunction"] = {"replaceclosure", "hookfunc"},
-    ["run_on_actor"] = {"runonactor"},
-    ["sethiddenproperty"] = {"set_hidden_property", "sethiddenprop"},
-    ["gethiddenproperty"] = {"get_hidden_property", "gethiddenprop"},
-    ["isexecutorclosure"] = {"isourclosure", "checkclosure"},
-    ["request"] = {"httprequest", "http_request"},
-    ["gethui"] = {"get_hidden_gui"},
-    ["isnetworkowner"] = {"isnetowner"},
-    ["firetouchinterest"] = {"firetouchtransmitter"},
-    ["crypt.base64encode"] = {"crypt.base64_encode", "base64encode", "base64_encode"},
-    ["crypt.base64decode"] = {"crypt.base64_decode", "base64decode", "base64_decode"}
 }
 
 local function GetGlobal(Path)
@@ -38,14 +25,6 @@ end
 local Global = setmetatable({}, {
     __index = function(self, Name)
         local RawGlobal = GetGlobal(Name) or nil
-        if not RawGlobal and Aliases[Name] then
-            for Index, Alias in pairs(Aliases[Name]) do
-                local NewGlobal = GetGlobal(Alias)
-                if NewGlobal then
-                    return NewGlobal
-                end
-            end
-        end
         return RawGlobal
     end
 })
@@ -58,8 +37,12 @@ local Services = setmetatable({}, {
 
 local Results = {}
 
-local function AddResult(Text)
+local function AddResult(Name, Text)
     table.insert(Results, Text)
+    Log[Name] = {
+        Passed = string.find(Text, "✅") and true or false,
+        Reason = Text,
+    }
 end
 
 Environment.PrintResults = function()
@@ -74,50 +57,72 @@ Environment.PrintResults = function()
     print("Test score: " .. math.round((Passed / Tested) * 100) .. "%")
 end
 
+if Global.isfile and Global.readfile and Global.identifyexecutor then
+    local Name, Version = Global.identifyexecutor()
+    if Version then
+       local Path = "Abysall/Tests/TestResult_" .. Name .. "_" .. Version .. ".json"
+        if Global.isfile(Path) then
+            local Data = Services.HttpService:JSONDecode(Global.readfile(Path))
+            for Index, Value in pairs(Data) do
+                AddResult(Index, Value.Reason)
+                if Value.Passed == true then
+                    Environment[Index] = Global[Index]
+                end
+            end
+            return
+        end
+    end
+end
+
 local function RunTest(Name, Test, InternalName)
-Tested = Tested + 1
-local ExecutorName = Global.identifyexecutor and Global.identifyexecutor() or "Unknown"
-if BrokenFeatures[ExecutorName] and table.find(BrokenFeatures[ExecutorName], Name) then
-    AddResult("❌ " .. Name .. " failed: test has been skipped")
-    Failed = Failed + 1
-    return
-end
+    local TimedOut = false
+    Tested = Tested + 1
 
-local NewGlobal = Global[Name]
-if not NewGlobal then
-    AddResult("❌ " .. Name)
-    Failed = Failed + 1
-    return
-end
-
-local Time = 0
-local Finished = false
-task.spawn(function()
-local Success, Result = pcall(Test, NewGlobal)
-if Success then
-    if InternalName then
-        Environment[InternalName] = NewGlobal
-    else
-        Environment[Name] = NewGlobal
+    local ExecutorName = Global.identifyexecutor and Global.identifyexecutor() or "Unknown"
+    if BrokenFeatures[ExecutorName] and table.find(BrokenFeatures[ExecutorName], Name) then
+        AddResult(Name, "❌ " .. Name .. " failed: test has been skipped")
+        Failed = Failed + 1
+        return
     end
-    AddResult("✅ " .. Name)
-    Passed = Passed + 1
-else
-    AddResult("❌ " .. Name .. " failed: " .. Result)
-    Failed = Failed + 1
-end
-Finished = true
-end)
 
-while not Finished do
-    Time = Time + 1
-    if Time > 500 then
-       AddResult("❌ " .. Name .. " failed: test timed out")
-       Failed = Failed + 1
-    break
+    local NewGlobal = Global[Name]
+    if not NewGlobal then
+        AddResult(Name, "❌ " .. Name)
+        Failed = Failed + 1
+        return
     end
-    task.wait()
-end
+
+    local Time = 0
+    local Finished = false
+    task.spawn(function()
+    local Success, Result = pcall(Test, NewGlobal)
+    if not TimedOut then
+        if Success then
+            if InternalName then
+                Environment[InternalName] = NewGlobal
+            else
+                Environment[Name] = NewGlobal
+            end
+            AddResult(Name, "✅ " .. Name)
+            Passed = Passed + 1
+        else
+            AddResult(Name, "❌ " .. Name .. " failed: " .. Result)
+            Failed = Failed + 1
+        end
+    end
+    Finished = true
+    end)
+
+    while not Finished do
+        Time = Time + 1
+        if Time > 500 then
+        AddResult(Name, "❌ " .. Name .. " failed: test timed out")
+        Failed = Failed + 1
+        TimedOut = true
+        break
+        end
+        task.wait()
+    end
 end
 
 --[[ Environment ]]
@@ -994,4 +999,12 @@ end)
 assert(Result == "Example", "Did not return the script environment")
 end)
 
+if Environment.identifyexecutor and Environment.writefile then
+    local Name, Version = Environment.identifyexecutor()
+    if Version then
+        Environment.writefile("Abysall/Tests/TestResult_" .. Name .. "_" .. Version .. ".json", Services.HttpService:JSONEncode(Log))
+    end
+end
+
+Environment.PrintResults()
 return Environment
