@@ -69,7 +69,7 @@ if Global.isfile and Global.readfile and Global.identifyexecutor then
                     Environment[Index] = Global[Index]
                 end
             end
-            return
+            return Environment
         end
     end
 end
@@ -1006,5 +1006,4 @@ if Environment.identifyexecutor and Environment.writefile then
     end
 end
 
-Environment.PrintResults()
 return Environment
