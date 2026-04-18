@@ -3685,7 +3685,6 @@ Functions.HandleCharacter = function(NewCharacter)
             local Anchor = Functions.GetCurrentAnchor()
             if Anchor and LocalPlayer:DistanceFromCharacter(Anchor.PrimaryPart.Position) < Anchor.ActivateEventPrompt.MaxActivationDistance and not Anchor:GetAttribute("Activated") then
                 Anchor:WaitForChild("AnchorRemote"):InvokeServer(Globals.MainUI.AnchorHintFrame.Code.Text)
-                Functions.Notify({Title = "Successfully solved Anchor '" .. Anchor.Sign.TextLabel.Text .. "'", Body = "The code was '" .. Globals.MainUI.AnchorHintFrame.Code.Text .. "'"})
             end
             Globals.LastAutoAnchor = tick()
         end
@@ -3762,7 +3761,7 @@ Functions.HandleCharacter = function(NewCharacter)
             RemotesFolder.Crouch:FireServer(true)
         end
 
-        if Floor ~= "Fools" and Floor ~= "OldHotel" then
+        if Floor ~= "Fools" and Floor ~= "OldHotel" and not Camera:FindFirstChild("MinecartRig") then
             RootPart.CanCollide = false
             if Character.LowerTorso:FindFirstChild("Root") then
                 Character.LowerTorso.Root.C0 = Character.LowerTorso.Root.C0 * CFrame.new(0, Toggles.PositionSpoof.Value and 2.146 or 0, 0)
