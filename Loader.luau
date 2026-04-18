@@ -1,3 +1,7 @@
+if Abysall then
+    return 
+end
+
 local GameList = {
   [2440500124] = "Doors"
 }
