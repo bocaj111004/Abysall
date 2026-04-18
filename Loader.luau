@@ -30,6 +30,6 @@ end
 local Success, Result = pcall(function()
     local Game = GameList[game.GameId]
     if Game then
-        loadstring(game:HttpGet(BaseUrl .. "Games/" .. Game .. "/Main.luau"))()
+        loadstring(game:HttpGet(BaseUrl .. "Games/" .. Game .. "/Loader.luau"))()
     end
 end)
