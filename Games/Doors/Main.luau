@@ -1,12 +1,4 @@
 local LoadStart = tick() + 0.5
-if not Abysall then
-local BaseUrl = "https://raw.githubusercontent.com/bocaj111004/Abysall/refs/heads/main/"
-getgenv().Abysall = {
-    Environment = loadstring(game:HttpGet(BaseUrl .. "Components/Environment.luau"))(),
-    Interface = loadstring(game:HttpGet(BaseUrl .. "Components/Interface.luau"))(),
-    ESPLibrary = loadstring(game:HttpGet(BaseUrl .. "Components/ESP.luau"))(),
-}
-end
 Abysall.SavePath = "Doors"
 
 local Library = Abysall.Interface.Library
@@ -3777,8 +3769,8 @@ Functions.HandleCharacter = function(NewCharacter)
                 RootPart.CanCollide = not (Toggles.NoclipToggle.Value and true or Toggles.VelocityManipulationToggle.Value or false)
             end
 
-            Collision.Position = RootPart.Position + Vector3.new(0, 0.18, 0)
-            CollisionPart.Position = RootPart.Position + Vector3.new(0, 0.18, 0)
+            Collision.Position = RootPart.Position + Vector3.new(0, Toggles.PositionSpoof.Value and 2.128 or 0.18, 0)
+            CollisionPart.Position = RootPart.Position + Vector3.new(0, Toggles.PositionSpoof.Value and 2.128 or 0.18, 0)
             if Collision:FindFirstChild("CollisionCrouch") then
                 Collision.CollisionCrouch.Position = RootPart.Position + Vector3.new(0, Toggles.PositionSpoof.Value and 1.128 or -0.982, 0)
                 CollisionClone.CollisionCrouch.CollisionGroup = Collision.CollisionCrouch.CollisionGroup
