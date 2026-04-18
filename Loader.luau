@@ -5,7 +5,7 @@ local GameList = {
 local BaseUrl = "https://raw.githubusercontent.com/bocaj111004/Abysall/refs/heads/main/"
 getgenv().Abysall = {
     Environment = loadstring(game:HttpGet(BaseUrl .. "Components/Environment.luau"))(),
-    AdonisBypass = loadstring(game:HttpGet(BaseUrl .. "Components/AdonisBypass.luau"))(),
+    ESPLibrary = loadstring(game:HttpGet(BaseUrl .. "Components/ESP.luau"))(),
     Interface = loadstring(game:HttpGet(BaseUrl .. "Components/Interface.luau"))(),
 }
 
