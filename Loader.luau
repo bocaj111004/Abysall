@@ -1,3 +1,7 @@
+if Abysall then
+    return
+end
+
 local GameList = {
   [2440500124] = "Doors"
 }
@@ -7,17 +11,6 @@ getgenv().Abysall = {
     Environment = loadstring(game:HttpGet(BaseUrl .. "Components/Environment.luau"))(),
     ESPLibrary = loadstring(game:HttpGet(BaseUrl .. "Components/ESP.luau"))(),
     Interface = loadstring(game:HttpGet(BaseUrl .. "Components/Interface.luau"))(),
-}
-
-local Dependancies = {
-    "writefile",
-    "readfile",
-    "isfile",
-    "appendfile",
-    "delfile",
-    "listfiles",
-    "makefolder",
-    "delfolder"
 }
 
 for Index, Value in pairs(Dependancies) do
