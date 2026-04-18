@@ -9,24 +9,6 @@ getgenv().Abysall = {
     Interface = loadstring(game:HttpGet(BaseUrl .. "Components/Interface.luau"))(),
 }
 
-local Dependancies = {
-    "writefile",
-    "readfile",
-    "isfile",
-    "appendfile",
-    "delfile",
-    "listfiles",
-    "makefolder",
-    "delfolder"
-}
-
-for Index, Value in pairs(Dependancies) do
-    if not Abysall.Environment[Value] then
-          game:GetService("Players").LocalPlayer:Kick("Your executor is not supported.\nWe would recommend looking at https://whatexpsare.online to find a supported executor.")
-        return
-    end
-end
-
 local Success, Result = pcall(function()
     local Game = GameList[game.GameId]
     if Game then
