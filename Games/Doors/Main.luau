@@ -3364,14 +3364,15 @@ Functions.HandleCharacter = function(NewCharacter)
             Connections[Name]:Disconnect()
         end
     end
-
-    while Services.Workspace.CurrentCamera == Globals.OldCamera do
+    
+    while LocalPlayer:DistanceFromCharacter(Services.Workspace.CurrentCamera.CFrame.Position) > 1 do
         task.wait()
     end
+    task.wait(1)
 
     Character = NewCharacter
-    Humanoid = NewCharacter:WaitForChild("Humanoid")
-    RootPart = NewCharacter:FindFirstChild("HumanoidRootPart")
+    Humanoid = NewCharacter:WaitForChild("Humanoid", 9e9)
+    RootPart = NewCharacter:FindFirstChild("HumanoidRootPart", 9e9)
     Camera = Services.Workspace.CurrentCamera
 
     Globals.OldCamera = Camera
@@ -3848,7 +3849,7 @@ Functions.HandleCharacter = function(NewCharacter)
         end
     end)
 
-    task.wait(1.5)
+    task.wait(1)
     if Toggles.PositionSpoof.Value and Floor ~= "Fools" and Floor ~= "OldHotel" then
         RootPart.CFrame = RootPart.CFrame * CFrame.new(0, -2.146, 0)
         Humanoid.HipHeight = 0.25
