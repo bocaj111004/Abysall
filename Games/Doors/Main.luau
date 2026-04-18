@@ -244,6 +244,7 @@ local CollisionPartClone
 
 local Camera
 local LocalPlayer = Services.Players.LocalPlayer
+
 local RemotesFolder = Services.ReplicatedStorage:FindFirstChild("RemotesFolder")
 local LiveModifiers = Services.ReplicatedStorage:FindFirstChild("LiveModifiers")
 local FloorReplicated = Services.ReplicatedStorage:FindFirstChild("FloorReplicated")
@@ -252,6 +253,10 @@ local Drops = Services.Workspace:FindFirstChild("Drops")
 local GameData = Services.ReplicatedStorage:WaitForChild("GameData")
 local Floor = GameData:WaitForChild("Floor").Value
 local LatestRoom = GameData:WaitForChild("LatestRoom")
+
+while not LocalPlayer.Character or not CurrentRooms:FindFirstChildOfClass("Model") do
+    task.wait()
+end
 
 if not RemotesFolder then
     if Services.ReplicatedStorage:FindFirstChild("EntityInfo") then
@@ -345,10 +350,10 @@ Functions.CheckCompatability = function(Array)
 end
 
 Functions.SendChat = function(Message)
-	local Folder = ReplicatedStorage:FindFirstChild("DefaultChatSystemEvents") or Instance.new("Folder")
+	local Folder = Services.ReplicatedStorage:FindFirstChild("DefaultChatSystemEvents") or Instance.new("Folder")
 	local Event = Folder:FindFirstChild("SayMessageRequest") or Instance.new("RemoteEvent")
 	Event:FireServer(Message ,"All")
-	local Channel = (game:GetService("TextChatService"):FindFirstChild("TextChannels") and game:GetService("TextChatService"):FindFirstChild("TextChannels"):FindFirstChild("RBXGeneral") or Instance.new("TextChannel"))
+	local Channel = (Services.TextChatService:FindFirstChild("TextChannels") and Services.TextChatService:FindFirstChild("TextChannels"):FindFirstChild("RBXGeneral") or Instance.new("TextChannel"))
 	Channel:SendAsync(Message)
 end
 
@@ -358,6 +363,12 @@ Functions.IsCrouching = function()
     else
         return CollisionPart.CollisionGroup == "PlayerCrouching" and true or false
     end
+end
+
+Functions.GetInjuriesSpeed = function()
+    local Max = Humanoid.MaxHealth
+    local Current = Humanoid.Health
+    return 0.075 * (Max - Current)
 end
 
 Functions.GetCurrentSpeed = function()
@@ -373,6 +384,7 @@ Functions.GetCurrentSpeed = function()
     Speed = Speed + (LiveModifiers:FindFirstChild("PlayerFastest") and 20 or 0)
 
     Speed = Speed - (LiveModifiers:FindFirstChild("PlayerSlow") and 3 or 0)
+    Speed = Speed - (LiveModifiers:FindFirstChild("PlayerSlowHealth") and Functions.GetInjuriesSpeed() or 0)
     Speed = Speed - (Functions.IsCrouching() and (LiveModifiers:FindFirstChild("PlayerCrouchSlow") and 8 or LiveModifiers:FindFirstChild("PlayerSlow") and 8 or 5) or 0)
 
     return Speed
@@ -5364,26 +5376,6 @@ Connections.EntityHandler = Services.Workspace.ChildAdded:Connect(function(Entit
                 local Root = Entity.PrimaryPart
                 if Root then
                     Root.Transparency = 0.99
-                end
-
-                local Sound = Root:FindFirstChild("Footsteps")
-                if Sound then
-                    local Old = 0
-
-                    local Connection = Sound:GetPropertyChangedSignal("Volume"):Connect(function()
-                        if Sound.Volume < 0.1 and Old > 0.1 then
-                            Entity:SetAttribute("Inactive", true)
-                            Functions.RemoveESP(Entity)
-                            Functions.BlacklistESP(Entity)
-                        end
-                        if Sound.Volume > 0.1 then
-                            Old = Sound.Volume
-                        end
-                    end)
-
-                    Entity.Destroying:Once(function()
-                        Connection:Disconnect()
-                    end)
                 end
             end
 
