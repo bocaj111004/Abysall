@@ -774,7 +774,7 @@ end
 
 local Window = Library:CreateWindow({
     Title = "Abysall Hub",
-    Footer = "Abysall - Testing | Doors",
+    Footer = "Abysall Hub - Beta | Doors",
     NotifySide = "Right",
     ShowCustomCursor = false,
     AutoShow = true,
