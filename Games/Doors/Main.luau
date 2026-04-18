@@ -3712,11 +3712,11 @@ Functions.HandleCharacter = function(NewCharacter)
             Humanoid.JumpHeight = 5
         end
 
-        if Globals.Lagging or Options.SpeedBoostSlider.Value <= 6 then
+        if Globals.Lagging or Options.SpeedBoostSlider.Value <= 6 and Options.FlySpeed.Value <= 21 then
             CollisionPartClone.Massless = true
         end
 
-        if tick() - Previous > NextDelay and Toggles.SpeedBoostToggle.Value and Options.SpeedBoostSlider.Value > 6 and Floor ~= "Fools" and Floor ~= "OldHotel" then
+        if tick() - Previous > NextDelay and Toggles.SpeedBoostToggle.Value and Options.SpeedBoostSlider.Value > 6 and Floor ~= "Fools" and Floor ~= "OldHotel" or tick() - Previous > NextDelay and Toggles.FlyToggle.Value and Options.FlySpeed.Value > 21 and Floor ~= "Fools" and Floor ~= "OldHotel" then
             if CollisionPart.Anchored or Globals.Lagging or Toggles.VelocityManipulationToggle.Value then
                 CollisionPartClone.Massless = true
             else
