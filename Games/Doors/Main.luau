@@ -2036,8 +2036,10 @@ Toggles.NotifyLibraryCode:OnChanged(function(Value)
 end)
 
 Toggles.NotifyOxygen:OnChanged(function(Value)
-    Globals.OxygenUI_Text.Text = Functions.FormatOxygen(Character:GetAttribute("Oxygen"))
-    Globals.OxygenUI.Enabled = (Value and Character:GetAttribute("Oxygen") < 100 and true or false)
+    if Character:GetAttribute("Oxygen") then
+        Globals.OxygenUI_Text.Text = Functions.FormatOxygen(Character:GetAttribute("Oxygen"))
+        Globals.OxygenUI.Enabled = (Value and Character:GetAttribute("Oxygen") < 100 and true or false)
+    end
 end)
 
 Groupboxes.Visuals_EntitySettings = Groupboxes.Visuals_RightTab:AddTab("Settings")
@@ -3846,7 +3848,7 @@ Functions.HandleCharacter = function(NewCharacter)
         end
     end)
 
-    task.wait(1)
+    task.wait(1.5)
     if Toggles.PositionSpoof.Value and Floor ~= "Fools" and Floor ~= "OldHotel" then
         RootPart.CFrame = RootPart.CFrame * CFrame.new(0, -2.146, 0)
         Humanoid.HipHeight = 0.25
