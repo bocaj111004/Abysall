@@ -793,6 +793,7 @@ local Window = Library:CreateWindow({
     Center = true,
 	TabPadding = 3,
 	MenuFadeTime = 0,
+    CornerRadius = 2,
 })
 
 local Tabs = {
@@ -2806,6 +2807,12 @@ end)
 Options.ESPArrowsRadius:OnChanged(function(Value)
     Abysall.ESPLibrary:SetArrowRadius(Value)
 end)
+
+Tabs.Floors:UpdateWarningBox({
+	Visible = true,
+	Title = "Compatability Warning",
+	Text = "Features highlighted in red do not work in the current floor.",
+})
 
 Groupboxes.Floors_Automation = Tabs.Floors:AddRightGroupbox("Automation")
 
