@@ -1088,6 +1088,11 @@ Groupboxes.Self_Automation:AddDropdown("AutoInteractIgnoreList", {
         "Paintings",
         "Locks"
     },
+    Default = {
+        "Glitch Fragments",
+        "Jeff Items",
+        "Dropped Items"
+    },
     Multi = true,
     AllowNull = true
 })
@@ -3364,7 +3369,7 @@ Functions.HandleCharacter = function(NewCharacter)
             Connections[Name]:Disconnect()
         end
     end
-    
+
     while LocalPlayer:DistanceFromCharacter(Services.Workspace.CurrentCamera.CFrame.Position) > 1 do
         task.wait()
     end
