@@ -43,7 +43,7 @@ return function(Window)
     })
 
     User:AddLabel("ID: " .. LocalPlayer.Name, true)
-    User:AddLabel("Total Executions: " .. Abysall.TotalExecutions and Abysall.TotalExecutions or "N/A", true)
+    User:AddLabel("Total Executions: " .. (Abysall.TotalExecutions and Abysall.TotalExecutions) or "N/A", true)
 
     local Name, Version = Abysall.Environment.identifyexecutor()
     local Executor = InfoTab:AddLeftGroupbox("Executor Info")
@@ -62,7 +62,7 @@ return function(Window)
 
     local Community = InfoTab:AddRightGroupbox("Community")
     Community:AddButton("Copy Discord Invite", function()
-		toclipboard("https://discord.gg/5jwbZcqjVF")
-		Library:Notify("Discord invite copied.")
-	end)
+	    toclipboard("https://discord.gg/5jwbZcqjVF")
+	    Library:Notify("Discord invite copied.")
+    end)
 end
