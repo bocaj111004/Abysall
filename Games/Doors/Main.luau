@@ -3049,7 +3049,7 @@ Connections.RoomsAutoWalkHandler = Services.RunService.RenderStepped:Connect(fun
         local Path = Services.PathfindingService:CreatePath({
             AgentCanJump = true,
             AgentCanClimb = false,
-            WaypointSpacing = 3,
+            WaypointSpacing = 4,
             AgentRadius = 1.5,
             AgentHeight = 1.5,
             Costs = {
@@ -3069,6 +3069,12 @@ Connections.RoomsAutoWalkHandler = Services.RunService.RenderStepped:Connect(fun
                     end
                 end
                 TargetPosition = TargetPart.PrimaryPart.Position
+            end
+
+            if CollisionPart.Anchored and not TargetPart:FindFirstChild("HidePrompt") then
+                Character:SetAttribute("Hiding", true)
+                RemotesFolder.CamLock:FireServer()
+                Character:SetAttribute("Hiding", false)
             end
 
             if TargetPosition and LocalPlayer:DistanceFromCharacter(TargetPosition) < 750 then
@@ -3118,11 +3124,9 @@ Connections.RoomsAutoWalkHandler = Services.RunService.RenderStepped:Connect(fun
                             end
                             if TargetPart:FindFirstChild("HidePrompt") and LocalPlayer:DistanceFromCharacter(TargetPosition) < TargetPart:FindFirstChild("HidePrompt").MaxActivationDistance and Character:GetAttribute("Hiding") ~= true then
                                 Functions.ForceFirePrompt(TargetPart:FindFirstChild("HidePrompt"))
-                            elseif Character:GetAttribute("Hiding") == true and not TargetPart:FindFirstChild("HidePrompt") then
-                                RemotesFolder.CamLock:FireServer()
                             end
                             local NewPosition = Vector3.new(Waypoint.Position.X, RootPart.Position.Y, Waypoint.Position.Z)
-                            if LocalPlayer:DistanceFromCharacter(NewPosition) < 4 then
+                            if LocalPlayer:DistanceFromCharacter(NewPosition) < 5 then
                                 Finished = true
                             end
                             Humanoid:MoveTo(Waypoint.Position)
@@ -5568,7 +5572,12 @@ end)
 Abysall.Interface.ApplySettingsTab(Window)
 Library:OnUnload(function()
     for Index, Connection in pairs(Connections) do
-        Connection:Disconnect()
+        pcall(function()
+            Index:Disconnect()
+        end)
+        pcall(function()
+            Connection:Disconnect()
+        end)
     end
 
     for Index, Object in pairs(Objects.Entities) do
