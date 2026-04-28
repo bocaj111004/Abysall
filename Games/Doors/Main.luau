@@ -360,9 +360,6 @@ Globals.SeekNodesFolder.Name = Abysall.ESPLibrary:GenerateRandomString()
 Globals.RoomsNodesFolder = Instance.new("Folder", Services.Workspace)
 Globals.RoomsNodesFolder.Name = Abysall.ESPLibrary:GenerateRandomString()
 
-Globals.FogContainer = Instance.new("Folder")
-Globals.FogContainer.Name = Abysall.ESPLibrary:GenerateRandomString()
-
 Globals.OxygenUI = Instance.new("ScreenGui", Services.CoreGui)
 Globals.OxygenUI.Name = Abysall.ESPLibrary:GenerateRandomString()
 Globals.OxygenUI.Enabled = false
@@ -743,15 +740,30 @@ Functions.Notify = function(Settings)
         Container = Services.CoreGui
     end
 
-    local Sound = Instance.new("Sound", Container)
-    Sound.SoundId = "rbxassetid://8784885431"
-    Sound.Volume = (Toggles.NotifyPlaySound.Value and Options.NotifySoundVolume.Value or 0)
-    Sound.PlayOnRemove = true
-    Sound:Destroy()
+    if not Settings.Body then
+        Settings.Body = "..."
+    end
 
-    NotificationLibrary:Notify(Settings.Title, Settings.Body, Settings.Time or 5)
+    if Options.NotifyStyle.Value == "Abysall" then
+        local Sound = Instance.new("Sound", Container)
+        Sound.SoundId = "rbxassetid://8784885431"
+        Sound.Volume = (Toggles.NotifyPlaySound.Value and Options.NotifySoundVolume.Value or 0)
+        Sound.PlayOnRemove = true
+        Sound:Destroy()
+
+        NotificationLibrary:Notify(Settings.Title, Settings.Body, Settings.Time or 5)
+    else
+        local Sound = Instance.new("Sound", Container)
+        Sound.SoundId = "rbxassetid://4590662766"
+        Sound.Volume = (Toggles.NotifyPlaySound.Value and Options.NotifySoundVolume.Value or 0)
+        Sound.PlayOnRemove = true
+        Sound:Destroy()
+
+        Library:OldNotify({Title = Settings.Title, Description = Settings.Body, Time = Settings.Time})
+    end
 end
 
+Library.OldNotify = Library.Notify
 Library.Notify = function(Data, Body, Time)
     Functions.Notify({Title = Body, Time = Time or 5})
 end
@@ -2112,6 +2124,15 @@ Groupboxes.Visuals_EntitySettings:AddInput("EntityChatMessage", {
 
 Groupboxes.Visuals_EntitySettings:AddDivider()
 
+Groupboxes.Visuals_EntitySettings:AddDropdown("NotifyStyle", {
+    Text = "Notify Style",
+    Values = {
+        "Abysall",
+        "Obsidian"
+    },
+    Default = 1
+})
+
 Groupboxes.Visuals_EntitySettings:AddSlider("NotifySoundVolume", {
     Text = "Sound Volume",
     Min = 0,
@@ -2679,6 +2700,24 @@ Groupboxes.Visuals_ESP_Settings:AddSlider("ESPOutlineTransparency", {
     Compact = true
 })
 
+Groupboxes.Visuals_ESP_Settings:AddSlider("ESPTextTransparency", {
+    Text = "Text Transparency",
+    Min = 0,
+    Max = 1,
+    Default = 0,
+    Rounding = 2,
+    Compact = true
+})
+
+Groupboxes.Visuals_ESP_Settings:AddSlider("ESPTextOutlineTransparency", {
+    Text = "Text Outline Transparency",
+    Min = 0,
+    Max = 1,
+    Default = 0,
+    Rounding = 2,
+    Compact = true
+})
+
 Groupboxes.Visuals_ESP_Settings:AddSlider("ESPFadeTime", {
     Text = "Fade Time",
     Min = 0,
@@ -2805,6 +2844,8 @@ Abysall.ESPLibrary:SetRainbow(false)
 Abysall.ESPLibrary:SetShowDistance(true)
 Abysall.ESPLibrary:SetFillTransparency(0.75)
 Abysall.ESPLibrary:SetOutlineTransparency(0)
+Abysall.ESPLibrary:SetTextTransparency(0)
+Abysall.ESPLibrary:SetTextOutlineTransparency(0)
 Abysall.ESPLibrary:SetFadeTime(0.25)
 Abysall.ESPLibrary:SetTextSize(18)
 Abysall.ESPLibrary:SetFont(Enum.Font.RobotoCondensed)
@@ -2829,6 +2870,14 @@ end)
 
 Options.ESPOutlineTransparency:OnChanged(function(Value)
     Abysall.ESPLibrary:SetOutlineTransparency(Value)
+end)
+
+Options.ESPTextTransparency:OnChanged(function(Value)
+    Abysall.ESPLibrary:SetTextTransparency(Value)
+end)
+
+Options.ESPTextOutlineTransparency:OnChanged(function(Value)
+    Abysall.ESPLibrary:SetTextOutlineTransparency(Value)
 end)
 
 Options.ESPFadeTime:OnChanged(function(Value)
@@ -5521,9 +5570,17 @@ Library:OnUnload(function()
     for Index, Connection in pairs(Connections) do
         Connection:Disconnect()
     end
+
     for Index, Object in pairs(Objects.Entities) do
         if Object.Name == "Snare" or Object.Name == "GiggleCeiling" then
             Object:WaitForChild("Hitbox").CanTouch = true
+        end
+        if Object.Name == "GloomPile" then
+            for Index2, Object2 in pairs(Object:GetDescendants()) do
+                if Object2:IsA("BasePart") then
+                    Object2.CanTouch = true
+                end
+            end
         end
         if Object.Name == "FakeDoor" or Object.Name == "DoorFake" then
             Object:WaitForChild("Hidden").CanTouch = true
@@ -5535,6 +5592,10 @@ Library:OnUnload(function()
             Object:WaitForChild("Collision").CanCollide = false
             Object:WaitForChild("Collision").CanTouch = true
         end
+    end
+
+    for Index, Object in pairs(Objects.SeekBridges) do
+        Object:Destroy()
     end
 
     for Index, Fog in pairs(Globals.FogInstances) do
@@ -5576,6 +5637,9 @@ Library:OnUnload(function()
         FakeEvents.Surge:Destroy()
         FakeEvents.Surge_Real.Parent = RemotesFolder
     end
+
+    Globals.SeekNodesFolder:Destroy()
+    Globals.RoomsNodesFolder:Destroy()
 
     local OldAmbient = CurrentRooms:FindFirstChild(tostring(LocalPlayer:GetAttribute("CurrentRoom"))):GetAttribute("Ambient")
     Services.TweenService:Create(Services.Lighting, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {Ambient = OldAmbient}):Play()
