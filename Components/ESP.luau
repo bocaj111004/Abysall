@@ -220,7 +220,7 @@ function Library:AddESP(Parameters)
 
 	task.spawn(function()
 		local function Render()
-            if not Object or not Object.Parent then
+            if not Object or not Object:IsDescendantOf(game) then
                 Library:RemoveESP(Object)
                 return
             end
