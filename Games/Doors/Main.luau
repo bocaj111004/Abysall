@@ -182,6 +182,25 @@ local Entities = {
     }
 }
 
+local EntityIcons = {
+	["RushMoving"] = "rbxassetid://10716032262",
+	["AmbushMoving"] = "rbxassetid://10110576663",
+	["A60"] = "rbxassetid://12571092295",
+	["A120"] = "rbxassetid://12711591665",
+	["BackdoorRush"] = "rbxassetid://16602023490",
+	["Eyes"] = "rbxassetid://10183704772",
+	["Lookman"] = "rbxassetid://10183704772",
+	["BackdoorLookman"] = "rbxassetid://16764872677",
+	["GloombatSwarm"] = "rbxassetid://79221203116470",
+	["Halt"] = "rbxassetid://11331795398",
+	["JeffTheKiller"] = "rbxassetid://94479432156278",
+	["GlitchRush"] = "rbxassetid://73859273102919",
+	["GlitchAmbush"] = "rbxassetid://88369678433359",
+	["SallyMoving"] = "rbxassetid://10840888070",
+	["MonumentEntity"] = "rbxassetid://88933556873017",
+	["Groundskeeper"] = "rbxassetid://114991380115557"
+}
+
 local ItemNames = {                                  
 	["Lighter"] = "Lighter",
 	["Flashlight"] = "Flashlight",
@@ -380,6 +399,7 @@ function NotificationLibrary:Notify(TitleText, Desc, Delay)
 	end)
 end
 
+Globals.DoorsNotify = loadstring(game:HttpGet("https://raw.githubusercontent.com/Msdoors/Msdoors.gg/refs/heads/main/Scripts/Msdoors/Notification/Source.lua"))()
 Functions.Notify = function(Settings)
     local Container
     if Functions.CheckCompatability({"gethui"}) then
@@ -400,6 +420,24 @@ Functions.Notify = function(Settings)
         Sound:Destroy()
 
         NotificationLibrary:Notify(Settings.Title, Settings.Body, Settings.Time or 5)
+    elseif Options.NotifyStyle.Value == "Doors" then
+        local IsEntity = false
+        local EntityName = ""
+        for Index, Object in pairs(Entities) do
+            if Object.NotifyMessage.Title == Settings.Title or Object.NotifyMessage.Body == Settings.Body then
+                IsEntity = true
+                EntityName = Index
+            end
+        end
+
+        Globals.DoorsNotify("Doors", {
+            Title = "Abysall Hub",
+            Description = Settings.Title,
+            Reason = Settings.Body,
+            Style = IsEntity and "WARNING" or "NOTIFICATION",
+            Color = (IsEntity and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(255, 255, 255)),
+            Image = Settings.Image
+        })
     else
         local Sound = Instance.new("Sound", Container)
         Sound.SoundId = "rbxassetid://4590662766"
@@ -860,8 +898,8 @@ Functions.GetLibraryCode = function()
 end
 
 local Window = Library:CreateWindow({
-    Title = "Abysall Hub",
-    Footer = "Abysall Hub - Beta | Doors",
+    Title = (Abysall.UILibrary == "Linoria" and "Abysall Hub - discord.gg/5jwbZcqjVF" or "Abysall Hub"),
+    Footer = "Abysall Hub - discord.gg/5jwbZcqjVF",
     NotifySide = "Right",
     ShowCustomCursor = false,
     AutoShow = true,
@@ -1460,7 +1498,7 @@ Groupboxes.Exploits_Bypass:AddToggle("InfiniteItemsToggle", {
     Default = false,
     Tooltip = "Allows certain items to be used without draining their uses.",
 
-    Disabled = not (Functions.CheckCompatability({"fireproximityprompt"})),
+    Disabled = not Functions.CheckCompatability({"fireproximityprompt"}),
     DisabledTooltip = Globals.IncompatibleMessage
 })
 
@@ -1475,7 +1513,7 @@ Groupboxes.Exploits_Bypass:AddDropdown("InfiniteItemsList", {
     Multi = true,
     AllowNull = true,
 
-    Disabled = not (Functions.CheckCompatability({"fireproximityprompt"})),
+    Disabled = not Functions.CheckCompatability({"fireproximityprompt"}),
     DisabledTooltip = Globals.IncompatibleMessage
 })
 
@@ -1760,6 +1798,59 @@ Groupboxes.Visuals_Camera:AddSlider("ThirdPersonOffsetZ", {
     Compact = true
 })
 
+Groupboxes.Visuals_Camera:AddToggle("ThirdPersonWallCheck", {
+    Text = "Wall Check",
+    Default = false,
+    Tooltip = "Prevents third person from going through walls."
+})
+
+Groupboxes.Visuals_Camera:AddDivider()
+
+Groupboxes.Visuals_Camera:AddToggle("ViewmodelOffsetToggle", {
+    Text = "Viewmodel Offset",
+    Default = false,
+    Tooltip = "Changes the offset of your viewmodel while holding an item.",
+
+    Disabled = not Functions.CheckCompatability({"require"}),
+    DisabledTooltip = Globals.DisabledTooltip
+})
+
+Groupboxes.Visuals_Camera:AddSlider("ViewmodelOffsetX", {
+    Text = "X Offset",
+    Min = -10,
+    Max = 10,
+    Default = 0,
+    Rounding = 1,
+    Compact = true,
+
+    Disabled = not Functions.CheckCompatability({"require"}),
+    DisabledTooltip = Globals.DisabledTooltip
+})
+
+Groupboxes.Visuals_Camera:AddSlider("ViewmodelOffsetY", {
+    Text = "Y Offset",
+    Min = -10,
+    Max = 10,
+    Default = 0,
+    Rounding = 1,
+    Compact = true,
+
+    Disabled = not Functions.CheckCompatability({"require"}),
+    DisabledTooltip = Globals.DisabledTooltip
+})
+
+Groupboxes.Visuals_Camera:AddSlider("ViewmodelOffsetZ", {
+    Text = "Z Offset",
+    Min = -10,
+    Max = 10,
+    Default = 0,
+    Rounding = 1,
+    Compact = true,
+
+    Disabled = not Functions.CheckCompatability({"require"}),
+    DisabledTooltip = Globals.DisabledTooltip
+})
+
 Toggles.AmbientToggle:AddColorPicker("AmbientColor", {
     Text = "Ambient",
     Default = Color3.fromRGB(255, 255, 255),
@@ -2010,7 +2101,8 @@ Groupboxes.Visuals_EntitySettings:AddDropdown("NotifyStyle", {
     Text = "Notify Style",
     Values = {
         "Abysall",
-        "Obsidian"
+        "Doors",
+        "Library"
     },
     Default = 1
 })
@@ -2077,6 +2169,12 @@ Toggles.ObjectiveESPToggle:OnChanged(function(Value)
                 Functions.AddESP({
                     Object = Object.Wheel,
                     Text = "Water Pump",
+                    Color = Options.ObjectiveESPColor.Value
+                }, true)
+            elseif Object.Name == "CringlePresent" then
+                Functions.AddESP({
+                    Object = Object,
+                    Text = "Present",
                     Color = Options.ObjectiveESPColor.Value
                 }, true)
             elseif Object.Name == "LiveHintBook" then
@@ -3719,6 +3817,12 @@ Functions.HandleCharacter = function(NewCharacter)
             Main_Game.csgo = CFrame.new()
         end
 
+        if Toggles.ViewmodelOffsetToggle.Value then
+            Main_Game.tooloffset = Vector3.new(Options.ViewmodelOffsetX.Value, Options.ViewmodelOffsetY.Value, Options.ViewmodelOffsetZ.Value)
+        elseif Main_Game then
+            Main_Game.tooloffset = Vector3.new(0, 0, 0)
+        end
+
         if Globals.SelfKilled and Globals.MainUI:FindFirstChild("Statistics") then
             Globals.MainUI.Statistics.Death.Text = "Died to Abysall Hub"
         end
@@ -3768,7 +3872,7 @@ Functions.HandleCharacter = function(NewCharacter)
 
             Collision.Position = RootPart.Position + Vector3.new(0, Toggles.PositionSpoof.Value and 2.128 or 0.18, 0)
             CollisionPart.Position = RootPart.Position + Vector3.new(0, Toggles.PositionSpoof.Value and 2.128 or 0.18, 0)
-            if Collision:FindFirstChild("CollisionCrouch") then
+            if Collision:FindFirstChild("CollisionCrouch") and CollisionClone:FindFirstChild("CollisionCrouch") then
                 Collision.CollisionCrouch.Position = RootPart.Position + Vector3.new(0, Toggles.PositionSpoof.Value and 1.128 or -0.982, 0)
                 CollisionClone.CollisionCrouch.CollisionGroup = Collision.CollisionCrouch.CollisionGroup
             end
@@ -3782,7 +3886,7 @@ Functions.HandleCharacter = function(NewCharacter)
 
         if Toggles.VelocityManipulationToggle.Value then
             Globals.ManipulateBody.Parent = RootPart
-            Globals.ManipulateBody.Velocity = RootPart.CFrame.LookVector * 2
+            Globals.ManipulateBody.Velocity = RootPart.CFrame.LookVector * 2.25
         else
             Globals.ManipulateBody.Parent = nil
         end
@@ -3824,8 +3928,20 @@ Functions.HandleCharacter = function(NewCharacter)
 
         Character:SetAttribute("Sliding", Globals.Sliding)
 
+        local Params = RaycastParams.new()
+        Params.FilterDescendantsInstances = {Character}
+        Params.FilterType = Enum.RaycastFilterType.Exclude
+
+        local Direction = Camera.CFrame * CFrame.new(Options.ThirdPersonOffsetX.Value, Options.ThirdPersonOffsetY.Value, Options.ThirdPersonOffsetZ.Value).Position - Camera.CFrame.Position
+        local Result = Services.Workspace:Spherecast(Camera.CFrame.Position, 0.2, Direction, Params)
+
         if Toggles.ThirdPersonToggle.Value then
-            Camera.CFrame = Camera.CFrame * CFrame.new(Options.ThirdPersonOffsetX.Value, Options.ThirdPersonOffsetY.Value, Options.ThirdPersonOffsetZ.Value)
+            if Toggles.ThirdPersonWallCheck.Value and Result and Result.Instance.CanCollide then
+                local NewPosition = Camera.CFrame.Position + Direction.Unit * Result.Distance
+                Camera.CFrame = CFrame.new(NewPosition, NewPosition + Camera.CFrame.LookVector)
+            else
+                Camera.CFrame = Camera.CFrame * CFrame.new(Options.ThirdPersonOffsetX.Value, Options.ThirdPersonOffsetY.Value, Options.ThirdPersonOffsetZ.Value)
+            end
         end
 
         for Index, Part in (Globals.ThirdPersonParts) do
@@ -3953,6 +4069,7 @@ Globals.AllowedInstances = {
     ["ElectricalKeyObtain"] = true,
     ["LibraryHintPaper"] = true,
     ["WaterPump"] = true,
+    ["CringlePresent"] = true,
     ["Wheel"] = true,
     ["PickupItem"] = true,
     ["LiveHintBook"] = true,
@@ -4137,6 +4254,18 @@ Functions.HandleObject = function(Object)
             Functions.RemoveESP(Object.Wheel)
             Functions.BlacklistESP(Object.Wheel)
         end)
+        table.insert(Objects.Objectives, Object)
+    elseif Object.Name == "CringlePresent" then
+        if Toggles.ObjectiveESPToggle.Value then
+            Functions.AddESP({
+                Object = Object,
+                Text = "Present",
+                Color = Options.ObjectiveESPColor.Value
+            }, true)
+        end
+
+        Object:WaitForChild("ToolProp").Highlight:Destroy()
+        table.insert(Objects.Objectives, Object)
     elseif Object.Name == "LeverForGate" then
         if Toggles.ObjectiveESPToggle.Value then
             Functions.AddESP({
@@ -4761,7 +4890,7 @@ Functions.HandleObject = function(Object)
         table.insert(Objects.SeekObstructions, Object)
     elseif Object:GetAttribute("RawName") and string.find(Object:GetAttribute("RawName"), "Halt") or Object:GetAttribute("Shade") == true then
         if Toggles.NotifyEntities.Value and Options.EntityList.Value["Halt"] then
-            Functions.Notify({Title = "Entity 'Halt' will spawn in the next room."})
+            Functions.Notify({Title = "Entity 'Halt' will spawn in the next room.", Image = EntityIcons["Halt"]})
             
             if Toggles.EntityChatToggle.Value then
                 Functions.SendChat("Halt next room!")
@@ -4831,7 +4960,7 @@ Functions.HandleObject = function(Object)
 
         local EntityData = Entities["Groundskeeper"]
         if Toggles.NotifyEntities.Value and Options.EntityList.Value["Groundskeeper"] then
-            Functions.Notify({Title = EntityData.NotifyMessage.Title, Body = EntityData.NotifyMessage.Body})
+            Functions.Notify({Title = EntityData.NotifyMessage.Title, Body = EntityData.NotifyMessage.Body, Image = EntityIcons["Groundskeeper"]})
         end
 
         table.insert(Objects.Entities, Object)
@@ -5113,61 +5242,81 @@ Connections.PlayerHandler = Services.Players.PlayerAdded:Connect(function(Object
     end
 end)
 
+local PromptsToFire = {}
+local PromptCooldown = {}
 Functions.FirePrompt = Abysall.Environment.fireproximityprompt
 Functions.ForceFirePrompt = Abysall.Environment.fireproximityprompt
 if not Functions.FirePrompt then
     Functions.FirePrompt = function(Prompt)
-        local OldHold = Prompt.HoldDuration
-        local OldEnabled = Prompt.Enabled
-        local OldClip = Prompt.RequiresLineOfSight
-        Prompt.HoldDuration = 0
-        Prompt.Enabled = true
-        Prompt.RequiresLineOfSight = false
-        Prompt:InputHoldBegin()
-        Prompt:InputHoldEnd()
-        Prompt.HoldDuration = OldHold
-        Prompt.Enabled = OldEnabled
-        Prompt.RequiresLineOfSight = OldClip
+        if not Prompt:IsA("ProximityPrompt") or PromptCooldown[Prompt] or table.find(PromptsToFire, Prompt) or not Camera then return end
+        table.insert(PromptsToFire, Prompt)
+        return
     end
-    Functions.ForceFirePrompt = function(Prompt)
-        local Triggered = false
+    Functions.ForceFirePrompt = Functions.FirePrompt
+end
 
-        local OldHold = Prompt.HoldDuration
-        local OldEnabled = Prompt.Enabled
-        local OldClip = Prompt.RequiresLineOfSight
-        Prompt.HoldDuration = 0
-        Prompt.Enabled = true
-        Prompt.RequiresLineOfSight = false
+if not Functions.CheckCompatability({"fireproximityprompt"}) then
+    task.spawn(function()
+        while task.wait() do
+            local Prompt = table.remove(PromptsToFire, 1)
+            if Prompt then
+                PromptCooldown[Prompt] = true
+                local OldMaxActivationDistance, OldEnabled, OldParent, OldHolDuration, OldRequiredLineOfSight = Prompt.MaxActivationDistance, Prompt.Enabled, Prompt.Parent, Prompt.HoldDuration, Prompt.RequiresLineOfSight
+                Prompt.MaxActivationDistance = 99999
+                Prompt.Enabled = true
+                Prompt.HoldDuration = 0
+                Prompt.RequiresLineOfSight = false
 
-        local Position
+                local TempPart = Instance.new("Part")
+                TempPart.Parent = workspace
+                TempPart.CanCollide = false
+                TempPart.CanQuery = false
+                TempPart.CanTouch = false
+                TempPart.Anchored = true
+                TempPart.Transparency = 1
+                TempPart.Size = Vector3.new(0.001, 0.001, 0.001)
+                TempPart.Position = Camera.CFrame:ToWorldSpace(CFrame.new(0, 0, -5)).Position
 
-        if Prompt.Parent:IsA("BasePart") then
-            Position = Prompt.Parent.CFrame
-        elseif Prompt.Parent:IsA("Model") then
-            if Prompt.Parent.PrimaryPart then
-                Position = Prompt.Parent.PrimaryPart.CFrame
-            else
-                Position = Prompt.Parent:GetPivot()
-            end
-        end
+                if not Prompt or not OldParent then
+                    TempPart:Destroy()
+                    PromptCooldown[Prompt] = nil
+                    continue
+                end
+                
+                pcall(function()
+                    Prompt.Parent = TempPart
+                end)
 
-        Prompt.Triggered:Once(function()
-            Triggered = true
-        end)
+                local Shown = false
+                local Connection = Services.ProximityPromptService.PromptShown:Connect(function(ShownPrompt)
+                    if ShownPrompt == Prompt then
+                        Shown = true
+                    end
+                end)
 
-        for Index = 1, 10, 1 do
-            if not Triggered then
-                Camera.CFrame = CFrame.lookAt(Position.LookVector * 3, Position.Position)
+                local Tries = 0
+                while not Shown and Tries < 5 do
+                    Tries = Tries + 1
+                    task.wait()
+                end
+
                 Prompt:InputHoldBegin()
+                task.wait()
                 Prompt:InputHoldEnd()
                 task.wait()
+                Prompt.MaxActivationDistance = OldMaxActivationDistance
+                Prompt.Enabled = OldEnabled
+                Prompt.HoldDuration = OldHolDuration
+                Prompt.RequiresLineOfSight = OldRequiredLineOfSight
+                pcall(function()
+                    Prompt.Parent = OldParent 
+                end)
+                PromptCooldown[Prompt] = nil
+                TempPart:Destroy()
+                Connection:Disconnect()
             end
         end
-
-        Prompt.HoldDuration = OldHold
-        Prompt.Enabled = OldEnabled
-        Prompt.RequiresLineOfSight = OldClip
-    end
+    end)
 end
 
 local AutoInteractBlacklist = {
@@ -5456,14 +5605,16 @@ Connections.EntityHandler = Services.Workspace.ChildAdded:Connect(function(Entit
             if Options.EntityList.Value[EntityData.Alias] and Toggles.NotifyEntities.Value then
                 local NotifyMessage = {
                     Title = EntityData.NotifyMessage.Title,
-                    Body = EntityData.NotifyMessage.Body
+                    Body = EntityData.NotifyMessage.Body,
+                    Image = EntityIcons[Entity.Name]
                 }
                 if Entity.Name == "RushMoving" and Entity.PrimaryPart.Name ~= "RushNew" then
                     NotifyMessage.Title = NotifyMessage.Title:gsub("Rush", Entity.PrimaryPart.Name)
+                    NotifyMessage.Image = Entity.PrimaryPart:WaitForChild("Attachment").ParticleEmitter.Texture
                     Alias = Entity.PrimaryPart.Name
                 end
 
-                Functions.Notify({Title = NotifyMessage.Title, Body = NotifyMessage.Body})
+                Functions.Notify({Title = NotifyMessage.Title, Body = NotifyMessage.Body, Image = NotifyMessage.Image})
 
                 if Toggles.EntityChatToggle.Value then
                     Functions.SendChat(Alias .. " " .. Options.EntityChatMessage.Value)
@@ -5671,6 +5822,7 @@ Library:OnUnload(function()
     if Main_Game then
         Main_Game.fovtarget = 70
         Main_Game.spring.Speed = 8
+        Main_Game.tooloffset = Vector3.new(0, 0, 0)
     end
 
     getgenv().Abysall = nil
