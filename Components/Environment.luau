@@ -604,14 +604,13 @@ RunTest("isnetworkowner", function()
         end
     end
 
-    assert(TestPart ~= nil, "skipped, no part to test with")
+    local IsOwned = Global.isnetworkowner(Test2)
+    Test2.Anchored = false
 
+    assert(TestPart ~= nil, "skipped, no part to test with")
     assert(Global.isnetworkowner(Test) == true, "Did not return true for a client owned part")
     assert(Global.isnetworkowner(TestPart) == false, "Did not return false for a non client owned part")
     Test:Destroy()
-
-    local IsOwned = Global.isnetworkowner(Test2)
-    Test2.Anchored = false
     assert(IsOwned == true, "Did not return true for a client owned anchored part")
 end)
 
