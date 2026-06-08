@@ -5350,6 +5350,7 @@ if not Functions.CheckCompatability({"fireproximityprompt"}) then
             if Prompt then
                 PromptCooldown[Prompt] = true
                 local OldMaxActivationDistance, OldEnabled, OldParent, OldHolDuration, OldRequiredLineOfSight = Prompt.MaxActivationDistance, Prompt.Enabled, Prompt.Parent, Prompt.HoldDuration, Prompt.RequiresLineOfSight
+
                 Prompt.MaxActivationDistance = 99999
                 Prompt.Enabled = true
                 Prompt.HoldDuration = 0
@@ -5363,7 +5364,7 @@ if not Functions.CheckCompatability({"fireproximityprompt"}) then
                 TempPart.Anchored = true
                 TempPart.Transparency = 1
                 TempPart.Size = Vector3.new(0.001, 0.001, 0.001)
-                TempPart.Position = Camera.CFrame:ToWorldSpace(CFrame.new(0, 0, -1)).Position
+                TempPart.Position = Camera.CFrame:ToWorldSpace(CFrame.new(0, 0, -0.1)).Position
 
                 if not Prompt or not OldParent then
                     TempPart:Destroy()
@@ -5389,13 +5390,13 @@ if not Functions.CheckCompatability({"fireproximityprompt"}) then
                 end)
 
                 local Tries1 = 0
-                while not Shown and Tries1 < 10 do
+                while not Shown and Tries1 < 5 do
                     Tries1 = Tries1 + 1
                     task.wait()
                 end
 
                 local Tries2 = 0
-                while not Fired and Tries2 < 10 do
+                while not Fired and Tries2 < 5 do
                     Prompt:InputHoldBegin()
                     Prompt:InputHoldEnd()
 
@@ -5403,7 +5404,6 @@ if not Functions.CheckCompatability({"fireproximityprompt"}) then
                     task.wait()
                 end
 
-                task.wait()
                 Prompt.MaxActivationDistance = OldMaxActivationDistance
                 Prompt.Enabled = OldEnabled
                 Prompt.HoldDuration = OldHolDuration
@@ -5411,10 +5411,12 @@ if not Functions.CheckCompatability({"fireproximityprompt"}) then
                 pcall(function()
                     Prompt.Parent = OldParent 
                 end)
+                task.wait()
                 PromptCooldown[Prompt] = nil
                 TempPart:Destroy()
                 Connection1:Disconnect()
                 Connection2:Disconnect()
+                task.wait()
             end
         end
     end)
