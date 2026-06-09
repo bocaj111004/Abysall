@@ -1,8 +1,9 @@
 return function(Window)
     local LatestChangelog = {
         "02/6/2026",
-        "<font color='rgb(0, 255, 0)'>+ Added Keep Notifications</font>",
-		"<font color='rgb(0, 255, 0)'>+ Added Rush Mode Closet to Hiding Spot ESP</font>",
+        "<font color='rgb(0, 255, 0)'>+ Auto Interact Ignores Paintings</font>",
+		"<font color='rgb(0, 255, 0)'>+ Rewrote Most of the Internal Script</font>",
+		As the internal script has had many changes, there may be new bugs, please report them in the discord server if you find any.
     }
 
     local function CloneReference(Object)
