@@ -2387,6 +2387,14 @@ Groupboxes.Floors_Farming:AddButton({
 			return
 		end
 
+		if LocalPlayer.PlayerGui:FindFirstChild("TopbarUI") then 
+			local GoldCount = LocalPlayer.PlayerGui.TopbarUI.Topbar.StatsTopbarHandler.StatModules.Gold.GoldVal
+			if GoldCount.Value <= 0 then
+				Functions.Notify({Title = "You must have gold to do this."})
+				return
+			end
+		end
+
         Globals.KnobFarmStarted = true
     end
 })
@@ -2402,25 +2410,22 @@ end)
 Globals.KnobFarmActive = false
 Globals.KnobFarmStarted = false
 Connections.KnobFarm = Services.RunService.Heartbeat:Connect(function()
-	if LocalPlayer.PlayerGui:FindFirstChild("TopbarUI") then 
-		local GoldCount = LocalPlayer.PlayerGui.TopbarUI.Topbar.StatsTopbarHandler.StatModules.Gold.GoldVal
-		if Toggles.KnobFarm.Value and GoldCount.Value > 0 and Globals.KnobFarmStarted then
-			if not Globals.KnobFarmActive then
-				Globals.KnobFarmActive = true
-				if Functions.CheckCompatability({"replicatesignal"}) then
-					Abysall.Environment.replicatesignal(LocalPlayer.Kill)
-				else
-					RemotesFolder.Underwater:FireServer(true)
-				end
-				while task.wait() do
-					if LocalPlayer:GetAttribute("Alive") then
-						break
-					end
-				end
-				RemotesFolder.Statistics:FireServer()
-				task.wait(0.5)
-				Globals.KnobFarmActive = false
+	if Toggles.KnobFarm.Value and Globals.KnobFarmStarted then
+		if not Globals.KnobFarmActive then
+			Globals.KnobFarmActive = true
+			if Functions.CheckCompatability({"replicatesignal"}) then
+				Abysall.Environment.replicatesignal(LocalPlayer.Kill)
+			else
+				RemotesFolder.Underwater:FireServer(true)
 			end
+			while task.wait() do
+				if LocalPlayer:GetAttribute("Alive") then
+					break
+				end
+			end
+			RemotesFolder.Statistics:FireServer()
+			task.wait(0.5)
+			Globals.KnobFarmActive = false
 		end
 	end
 end)
