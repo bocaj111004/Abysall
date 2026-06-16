@@ -3000,7 +3000,7 @@ Functions.HandleCharacter = function(NewCharacter)
 		end
 
 		if Toggles.VelocityManipulationToggle.Value and Options.VelocityManipulationMode.Value == "Pivot" and Floor ~= "Fools" and Floor ~= "OldHotel" then
-			Character:PivotTo(Character:GetPivot() * CFrame.new(0, 0, 250))
+			Character:PivotTo(Character:GetPivot() * CFrame.new(0, 0, 125))
 		end
 
 		if Toggles.FlyToggle.Value then
