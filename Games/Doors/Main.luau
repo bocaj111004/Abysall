@@ -3568,7 +3568,7 @@ Functions.HandleObject = function(Object)
 			Distance = math.huge
 		}
 		for _, Room in pairs(CurrentRooms:GetChildren()) do
-			local Distance = (Room:GetPivot().Position - Object:GetPivot().Position)
+			local Distance = (Room:GetPivot().Position - Object:GetPivot().Position).Magnitude
 			if Distance < Nearest.Distance then
 				Nearest.Room = Room
 				Nearest.Distance = Distance
@@ -3578,7 +3578,7 @@ Functions.HandleObject = function(Object)
 		if Nearest.Room then
 			Object:SetAttribute("ParentRoom", tonumber(Nearest.Room.Name))
 		end
-		
+
 		if Toggles.ItemESPToggle.Value then Functions.AddESP({ Object = Object, Text = ItemNames[Name], Color = Options.ItemESPColor.Value }, Object:GetAttribute("ParentRoom") ~= nil) end
 		if Name == "LotusHolder" or Name == "LotusPetalPickup" then
 			Object.Handle:GetPropertyChangedSignal("LocalTransparencyModifier"):Connect(function()
