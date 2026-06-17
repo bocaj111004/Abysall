@@ -3700,7 +3700,7 @@ Functions.HandleObject = function(Object)
 		for _, Part in pairs(Object:GetDescendants()) do
 			if Part:IsA("BasePart") then
 				Part.CanTouch = false
-				if Toggles.DeleteFigure.Value then
+				if Toggles.RemoveFigure.Value then
 					Part.CanCollide = false
 				end
 			end
