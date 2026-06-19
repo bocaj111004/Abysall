@@ -3580,7 +3580,7 @@ Functions.HandleObject = function(Object)
 		end
 
 		if Nearest.Room and not Object:GetAttribute("ParentRoom") then
-			Object:SetAttribute("ParentRoom", tonumber(Nearest.Room))
+			Object:SetAttribute("ParentRoom", (Nearest.Distance < 35 and tonumber(Nearest.Room) or tonumber(Nearest.Room) - 1))
 		end
 
 		if Toggles.ItemESPToggle.Value then Functions.AddESP({ Object = Object, Text = ItemNames[Name], Color = Options.ItemESPColor.Value }, Object:GetAttribute("ParentRoom") ~= nil) end
