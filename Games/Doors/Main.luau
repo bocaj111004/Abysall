@@ -2322,7 +2322,7 @@ Groupboxes.Floors_Completion:AddButton({
                     Functions.ForceFirePrompt(Prompt)
                 end
 
-                if Object:GetAttribute("Abysall_Completed") then
+                if Pump:GetAttribute("Abysall_Completed") then
                     break
                 end
             end
