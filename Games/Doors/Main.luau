@@ -2625,10 +2625,7 @@ Functions.HandleCharacter = function(NewCharacter)
 	Globals.LastDuck = tick()
 	Connections.AutoSteerMinecartDuckHandler = Services.RunService.Heartbeat:Connect(function()
 		if not Toggles.AutoSteerMinecart.Value or not Functions.GetMinecart() or tick() - Globals.LastDuck < 0.1 then return end
-		local Node = Functions.GetNearestTurnNode()
-		if Node then
-			Globals.NearestTurnNode = Node
-		end
+		Globals.NearestTurnNode = NodeFunctions.GetNearestTurnNode()
 
 		if not Globals.AutoMinecartDucked and Functions.GetNearestDuckBoard() then
 			Main_Game.crouch(true)
