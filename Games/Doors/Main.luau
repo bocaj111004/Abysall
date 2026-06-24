@@ -2625,7 +2625,7 @@ Functions.HandleCharacter = function(NewCharacter)
 	Globals.LastDuck = tick()
 	Connections.AutoSteerMinecartDuckHandler = Services.RunService.Heartbeat:Connect(function()
 		if not Toggles.AutoSteerMinecart.Value or not Functions.GetMinecart() or tick() - Globals.LastDuck < 0.1 then return end
-		Globals.NearestTurnNode = NodeFunctions.GetNearestTurnNode()
+		Globals.NearestTurnNode = Functions.GetNearestTurnNode()
 
 		if not Globals.AutoMinecartDucked and Functions.GetNearestDuckBoard() then
 			Main_Game.crouch(true)
@@ -3176,6 +3176,7 @@ Functions.HandleObject = function(Object)
 			Object:SetAttribute("ParentRoom", tonumber(Room.Name))
 			break
 		end
+		task.wait()
 	end
 
 	if Object.Parent == CurrentRooms then
@@ -3916,14 +3917,9 @@ end
 
 Globals.QueueDone = true
 Connections.QueueConnection = Services.RunService.RenderStepped:Connect(function()
-	if not Globals.QueueDone then
-		return
-	end
 	local Object = table.remove(Globals.ObjectQueue, 1)
 	if Object then
-		Globals.QueueDone = false
 		Functions.HandleObject(Object)
-		Globals.QueueDone = true
 	end
 end)
 
@@ -4286,7 +4282,7 @@ Connections.EntityHandler = Services.Workspace.ChildAdded:Connect(function(Entit
 	end
 	task.wait(0.1)
 
-	if LocalPlayer:DistanceFromCharacter(Entity.PrimaryPart.Position) >= 10000 then return end
+	if not Entity.PrimaryPart or LocalPlayer:DistanceFromCharacter(Entity.PrimaryPart.Position) >= 10000 then return end
 
 	local Alias = EntityData.Alias
 	if Options.EntityList.Value[Alias] and Toggles.NotifyEntities.Value then
