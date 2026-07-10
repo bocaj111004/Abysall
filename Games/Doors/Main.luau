@@ -242,6 +242,7 @@ local LocalPlayer = Services.Players.LocalPlayer
 local RemotesFolder   = Services.ReplicatedStorage:FindFirstChild("RemotesFolder")
 local LiveModifiers   = Services.ReplicatedStorage:FindFirstChild("LiveModifiers")
 local FloorReplicated = Services.ReplicatedStorage:FindFirstChild("FloorReplicated")
+local ModulesShared = Services.ReplicatedStorage:FindFirstChild("ModulesShared")
 local CurrentRooms    = Services.Workspace:FindFirstChild("CurrentRooms")
 local Drops           = Services.Workspace:FindFirstChild("Drops")
 local GameData        = Services.ReplicatedStorage:WaitForChild("GameData")
@@ -250,6 +251,9 @@ local LatestRoom      = GameData:WaitForChild("LatestRoom")
 local FinishedLoadingRoom = GameData:FindFirstChild("FinishedLoadingRoom")
 if FinishedLoadingRoom then
 	FinishedLoadingRoom:Destroy()
+end
+if not ModulesShared then
+	ModulesShared = Instance.new("Folder")
 end
 
 local function GetHiddenContainer()
@@ -1447,6 +1451,7 @@ Groupboxes.Exploits_Remove:AddToggle("RemoveScreech", { Text = "Remove Screech",
 Groupboxes.Exploits_Remove:AddToggle("RemoveHalt",    { Text = "Remove Halt",     Default = false, Tooltip = "Prevents 'Halt' from spawning." })
 Groupboxes.Exploits_Remove:AddToggle("RemoveA90",     { Text = "Remove A-90",     Default = false, Tooltip = "Prevents 'A-90' from spawning." })
 Groupboxes.Exploits_Remove:AddToggle("RemoveDread",   { Text = "Remove Dread",    Default = false, Tooltip = "Prevents 'Dread' from spawning." })
+Groupboxes.Exploits_Remove:AddToggle("RemoveSurge", { Text = "Remove Surge", Default = false, Tooltip = "Prevents 'Surge' from spawning."})
 Groupboxes.Exploits_Remove:AddDivider()
 Groupboxes.Exploits_Remove:AddToggle("NoScreechDamage", { Text = "No Screech Damage", Default = false, Tooltip = "Prevents 'Screech' from hurting you." })
 Groupboxes.Exploits_Remove:AddToggle("NoHaltDamage",    { Text = "No Halt Damage",    Default = false, Tooltip = "Prevents 'Halt' from hurting you." })
@@ -1513,6 +1518,11 @@ end)
 Toggles.RemoveDread:OnChanged(function(Value)
 	if Modules.Dread then
 		Modules.Dread.Name = Value and "Dread_Disabled" or "Dread"
+	end
+end)
+Toggles.RemoveSurge:OnChanged(function(Value)
+	if Modules.Surge then
+		Modules.Surge.Name = (Value and "SurgeCheck_Disabled" or "SurgeCheck")
 	end
 end)
 
@@ -1693,6 +1703,22 @@ Groupboxes.Visuals_Entities:AddDropdown("EntityList", {
 })
 Groupboxes.Visuals_Entities:AddToggle("NotifyEntities",    { Text = "Notify Entities",    Default = false, Tooltip = "Sends a notification when an entity spawns." })
 Groupboxes.Visuals_Entities:AddDivider()
+
+local ItemsToNotify = {}
+for Index, Name in pairs(ItemNames) do
+	if not table.find(ItemsToNotify, Name) then
+		table.insert(ItemsToNotify, Name)
+	end
+end
+
+Groupboxes.Visuals_Entities:AddDropdown("NotifyItemList", {
+	Text = "Item List",
+	Values = ItemsToNotify,
+	Multi = true, AllowNull = true
+})
+Groupboxes.Visuals_Entities:AddToggle("NotifyItemsToggle",    { Text = "Notify Items",    Default = false, Tooltip = "Sends a notification when an item spawns." })
+Groupboxes.Visuals_Entities:AddToggle("NotifyItemsShowDistance",    { Text = "Show Distance",    Default = false, Tooltip = "Shows how far away the item is in the notification." })
+Groupboxes.Visuals_Entities:AddDivider()
 Groupboxes.Visuals_Entities:AddToggle("NotifyLibraryCode", { Text = "Notify Library Code", Default = false, Tooltip = "Automatically solves the code for the library padlock." })
 Groupboxes.Visuals_Entities:AddToggle("NotifyOxygen",      { Text = "Notify Oxygen Level", Default = false, Tooltip = "Shows how much oxygen you have remaining." })
 Groupboxes.Visuals_Entities:AddToggle("NotifyHasteTime",   { Text = "Notify Haste Time",   Default = false, Tooltip = "Shows how much time you have remaining before 'Haste' spawns." })
@@ -1797,8 +1823,15 @@ Groupboxes.Visuals_ESP_Toggles:AddToggle("PlayerESPToggle",     { Text = "Player
 Groupboxes.Visuals_ESP_Toggles:AddToggle("ChestESPToggle",      { Text = "Chests",       Default = false, Tooltip = "Highlights objects that can contain loot." })
 Groupboxes.Visuals_ESP_Toggles:AddToggle("ItemESPToggle",       { Text = "Items",        Default = false, Tooltip = "Highlights all collectable items/consumables." })
 Groupboxes.Visuals_ESP_Toggles:AddToggle("CurrencyESPToggle",   { Text = "Currency",     Default = false, Tooltip = "Highlights all currency that spawns." })
-Groupboxes.Visuals_ESP_Toggles:AddToggle("EntityESPToggle",     { Text = "Entities",     Default = false, Tooltip = "Highlights all entities that spawn." })
 Groupboxes.Visuals_ESP_Toggles:AddToggle("LadderESPToggle",     { Text = "Ladders",      Default = false, Tooltip = "Highlights ladders that can be used to disable the anticheat." })
+Groupboxes.Visuals_ESP_Toggles:AddDivider()
+Groupboxes.Visuals_ESP_Toggles:AddDropdown("EntityESPOptions",     { 
+	Text = "Entity List",
+	Values = { "Rush","Ambush","Eyes","Dupe","Figure","Blitz","Lookman","Gloombat Eggs","Grumble","A-60","A-120","Sally","Jeff the Killer","Groundskeeper","Mandrake Hole","Monument","Bramble","AR0xMBUSH","RNIUSHCG==" },
+	Multi = true,
+	AllowNull = true
+})
+Groupboxes.Visuals_ESP_Toggles:AddToggle("EntityESPToggle",     { Text = "Entities",      Default = false, Tooltip = "Highlights all entities that spawn." })
 
 Toggles.DoorESPToggle:AddColorPicker("DoorESPColor",           { Text = "Doors",        Default = Color3.fromRGB(0, 200, 255),  Transparency = 0 })
 Toggles.HidingSpotESPToggle:AddColorPicker("HidingSpotESPColor", { Text = "Hiding Spots", Default = Color3.fromRGB(255, 170, 0),  Transparency = 0 })
@@ -1806,8 +1839,8 @@ Toggles.PlayerESPToggle:AddColorPicker("PlayerESPColor",       { Text = "Players
 Toggles.ChestESPToggle:AddColorPicker("ChestESPColor",         { Text = "Chests",       Default = Color3.fromRGB(255, 255, 0),   Transparency = 0 })
 Toggles.ItemESPToggle:AddColorPicker("ItemESPColor",           { Text = "Items",        Default = Color3.fromRGB(170, 0, 255),   Transparency = 0 })
 Toggles.CurrencyESPToggle:AddColorPicker("CurrencyESPColor",   { Text = "Currency",     Default = Color3.fromRGB(255, 255, 0),   Transparency = 0 })
-Toggles.EntityESPToggle:AddColorPicker("EntityESPColor",       { Text = "Entities",     Default = Color3.fromRGB(255, 0, 0),     Transparency = 0 })
 Toggles.LadderESPToggle:AddColorPicker("LadderESPColor",       { Text = "Ladders",      Default = Color3.fromRGB(255, 255, 255), Transparency = 0 })
+Toggles.EntityESPToggle:AddColorPicker("EntityESPColor",       { Text = "Entities",     Default = Color3.fromRGB(255, 0, 0),     Transparency = 0 })
 
 local HidingSpotLabels = {
 	Wardrobe = "Closet", ["Backdoor_Wardrobe"] = "Closet", Toolshed = "Closet",
@@ -1820,10 +1853,15 @@ local ChestLabels = {
 	Chest_Vine = "Vine Chest", Toolshed_Small = "Toolshed", Locker_Small_Locked = "Locked Item Locker", MouseHole = "Mouse"
 }
 local EntityESPLabels = {
-	KeyObtainFake = "Fake Key", JeffTheKiller = "Jeff the Killer", GiggleCeiling = "Giggle",
+	JeffTheKiller = "Jeff the Killer", GiggleCeiling = "Giggle",
 	Snare = "Snare", GrumbleRig = "Grumble",
 	Drakobloxxer = "Drakobloxxer", Hole = "Mandrake Hole", Groundskeeper = "Groundskeeper",
-	LiveEntityBramble = "Bramble", Figure = "Figure", FigureRig = "Figure", FigureRagdoll = "Figure"
+	LiveEntityBramble = "Bramble", Figure = "Figure", FigureRig = "Figure", FigureRagdoll = "Figure",
+	FakeDoor = "Dupe", DoorFake = "Dupe"
+}
+
+local NodeEntities = {
+	Rush = true, Ambush = true, Eyes = true, Blitz = true, Lookman = true, ["A-60"] = true, ["A-120"] = true, Sally = true, ["Jeff The Killer"] = true, Monument = true, ["AR0xMBUSH"] = true, ["RNIUSHCG=="] = true
 }
 
 Toggles.DoorESPToggle:OnChanged(function(Value)
@@ -1929,14 +1967,33 @@ Toggles.EntityESPToggle:OnChanged(function(Value)
 		if Value then
 			local Label = EntityESPLabels[Object.Name]
 			if not Label and Entities[Object.Name] then Label = Entities[Object.Name].Alias end
-			if Label then
-				Functions.AddESP({ Object = Object, Text = Label, Color = Options.EntityESPColor.Value }, true)
+			if Label and Options.EntityESPOptions.Value[Label] then
+				Functions.AddESP({ Object = Object, Text = Label, Color = Options.EntityESPColor.Value }, not (NodeEntities[Label] and true or false))
+			else
+				Functions.RemoveESP(Object)
 			end
 		else
 			Functions.RemoveESP(Object)
 		end
 	end
 end)
+
+Options.EntityESPOptions:OnChanged(function(Value)
+	for _, Object in Objects.Entities do
+		if Toggles.EntityESPToggle.Value then
+			local Label = EntityESPLabels[Object.Name]
+			if not Label and Entities[Object.Name] then Label = Entities[Object.Name].Alias end
+			if Label and Options.EntityESPOptions.Value[Label] then
+				Functions.AddESP({ Object = Object, Text = Label, Color = Options.EntityESPColor.Value }, not (NodeEntities[Label] and true or false))
+			else
+				Functions.RemoveESP(Object)
+			end
+		else
+			Functions.RemoveESP(Object)
+		end
+	end
+end)
+
 Options.EntityESPColor:OnChanged(function(Value)
 	for _, Object in Objects.Entities do Abysall.ESPLibrary:UpdateObjectColor(Object, Value) end
 end)
@@ -2528,6 +2585,7 @@ Modules = {
 	Glitch         = ClientModules.EntityModules.Glitch,
 	Shade          = ClientModules.EntityModules.Shade,
 	Void           = ClientModules.EntityModules:FindFirstChild("Void"),
+	Surge = ModulesShared:FindFirstChild("SurgeCheck"),
 	SpiderJumpscare = nil,
 	A90            = nil,
 	Screech        = nil,
@@ -2944,10 +3002,8 @@ Functions.HandleCharacter = function(NewCharacter)
 			end
 		end
 
-		if not MainHook then
-			if (Toggles.CrouchSpoof.Value or Toggles.PositionSpoof.Value) and RemotesFolder:FindFirstChild("Crouch") then
-				RemotesFolder.Crouch:FireServer(true, true)
-			end
+		if (Toggles.CrouchSpoof.Value or Toggles.PositionSpoof.Value) and RemotesFolder:FindFirstChild("Crouch") then
+			RemotesFolder.Crouch:FireServer(true, true)
 		end
 
 		if Floor ~= "Fools" and Floor ~= "OldHotel" and not Camera:FindFirstChild("MinecartRig") then
@@ -3023,14 +3079,12 @@ Functions.HandleCharacter = function(NewCharacter)
 			Globals.FlyBody.Parent = nil
 		end
 
-		if not MainHook then
-			local DoEyesBypass = (Toggles.BypassEyes.Value and Globals.IsEyes) or (Toggles.BypassLookman.Value and Globals.IsLookman)
-			if DoEyesBypass then
-				if Floor == "Fools" or Floor == "OldHotel" then
-					RemotesFolder.MotorReplication:FireServer(0, (Globals.SpoofOffset == 200 and 65 or -65), 0, false)
-				else
-					RemotesFolder.MotorReplication:FireServer(-650)
-				end
+		local DoEyesBypass = (Toggles.BypassEyes.Value and Globals.IsEyes) or (Toggles.BypassLookman.Value and Globals.IsLookman)
+		if DoEyesBypass then
+			if Floor == "Fools" or Floor == "OldHotel" then
+				RemotesFolder.MotorReplication:FireServer(0, (Globals.SpoofOffset == 200 and 65 or -65), 0, false)
+			else
+				RemotesFolder.MotorReplication:FireServer(-650)
 			end
 		end
 
@@ -3199,14 +3253,6 @@ Functions.HandleObject = function(Object)
 				table.insert(Objects.Objectives, Object)
 			end
 		end)
-	elseif Name == "KeyObtainFake" then
-		task.spawn(function()
-			task.wait(0.5)
-			if Object.Parent then
-				if Toggles.EntityESPToggle.Value then Functions.AddESP({ Object = Object, Text = "Fake Key", Color = Options.EntityESPColor.Value }, true) end
-				table.insert(Objects.Entities, Object)
-			end
-		end)
 	elseif Name == "TimerLever" then
 		task.spawn(function()
 			task.wait(0.5)
@@ -3269,7 +3315,7 @@ Functions.HandleObject = function(Object)
 		end)
 		table.insert(Objects.Objectives, Object)
 	elseif Name == "MandrakeLive" then
-		if Toggles.ObjectiveESPToggle.Value then Functions.AddESP({ Object = Object.Hole, Text = "Mandrake Hole", Color = Options.EntityESPColor.Value }, true) end
+		if Toggles.ObjectiveESPToggle.Value and Options.EntityESPOptions.Value["Mandrake Hole"] then Functions.AddESP({ Object = Object.Hole, Text = "Mandrake Hole", Color = Options.EntityESPColor.Value }, true) end
 		table.insert(Objects.Entities, Object.Hole)
 	elseif Name == "MinesGenerator" then
 		task.spawn(function()
@@ -3562,6 +3608,15 @@ Functions.HandleObject = function(Object)
 				Abysall.ESPLibrary:BlacklistESP(Object)
 			end)
 		end
+
+		if Toggles.NotifyItemsToggle.Value and Options.NotifyItemList.Value[ItemNames[Name]] and Object.Parent.Name ~= "Drops" then
+			if Toggles.NotifyItemsShowDistance.Value then
+				Functions.Notify({ Title = "Item '" .. ItemNames[Name] .. "' has spawned.", Body = "It is '" .. math.round(LocalPlayer:DistanceFromCharacter(Object.PrimaryPart.Position)) .. "' studs away from you." })
+			else
+				Functions.Notify({ Title = "Item '" .. ItemNames[Name] .. "' has spawned."})
+			end
+		end
+
 		table.insert(Objects.Items, Object)
 	elseif Name == "Green_Herb" then
 		if Toggles.ItemESPToggle.Value then Functions.AddESP({ Object = Object, Text = "Green Herb", Color = Options.ItemESPColor.Value }, true) end
@@ -3573,7 +3628,7 @@ Functions.HandleObject = function(Object)
 		if Toggles.CurrencyESPToggle.Value then Functions.AddESP({ Object = Object, Text = "Stardust Pile", Color = Options.CurrencyESPColor.Value }, true) end
 		table.insert(Objects.Currency, Object)
 	elseif Name == "GiggleCeiling" then
-		if Toggles.EntityESPToggle.Value then Functions.AddESP({ Object = Object, Text = "Giggle", Color = Options.EntityESPColor.Value }, true) end
+		if Toggles.EntityESPToggle.Value and Options.EntityESPOptions.Value["Giggle"] then Functions.AddESP({ Object = Object, Text = "Giggle", Color = Options.EntityESPColor.Value }, true) end
 		if Toggles.BypassGiggle.Value then Object:WaitForChild("Hitbox").CanTouch = false end
 		table.insert(Objects.Entities, Object)
 	elseif Name == "GloomPile" then
@@ -3586,6 +3641,11 @@ Functions.HandleObject = function(Object)
 		local Connection = Object.DescendantAdded:Connect(function(Part)
 			if Part:IsA("BasePart") then Part.CanTouch = false end
 		end)
+
+		if Toggles.EntityESPToggle.Value and Options.EntityESPOptions.Value["Gloombat Eggs"] then
+			Functions.AddESP({ Object = Object, Text = "Gloombat Eggs", Color = Options.EntityESPColor.Value })
+		end
+
 		table.insert(Connections, Connection)
 		table.insert(Objects.Entities, Object)
 	elseif Name == "TriggerEventCollision" and Functions.CheckCompatability({"firetouchinterest"}) then
@@ -3611,6 +3671,9 @@ Functions.HandleObject = function(Object)
 				local Lock = Object:FindFirstChild("Lock")
 				if Lock and Lock:FindFirstChild("UnlockPrompt") then Lock.UnlockPrompt.Enabled = false end
 			end
+			if Toggles.EntityESPToggle.Value and Options.EntityESPOptions.Value["Dupe"] then
+				Functions.AddESP({ Object = Object, Text = "Dupe", Color = Options.EntityESPColor.Value })
+			end
 			table.insert(Objects.Entities, Object)
 		end
 	elseif Name == "SideroomSpace" then
@@ -3620,7 +3683,7 @@ Functions.HandleObject = function(Object)
 		end
 		table.insert(Objects.Entities, Object)
 	elseif Name == "Snare" then
-		if Toggles.EntityESPToggle.Value then Functions.AddESP({ Object = Object, Text = "Snare", Color = Options.EntityESPColor.Value }, true) end
+		if Toggles.EntityESPToggle.Value and Options.EntityESPOptions.Value["Snare"] then Functions.AddESP({ Object = Object, Text = "Snare", Color = Options.EntityESPColor.Value }, true) end
 		for _, Part in Object:GetDescendants() do
 			if Part:IsA("BasePart") then Part.CanTouch = not Toggles.BypassSnare.Value end
 		end
@@ -3680,16 +3743,13 @@ Functions.HandleObject = function(Object)
 			Object:WaitForChild("Humanoid").Health = 0
 		end
 	elseif Name == "GrumbleRig" then
-		if Toggles.EntityESPToggle.Value then Functions.AddESP({ Object = Object, Text = "Grumble", Color = Options.EntityESPColor.Value }, true) end
-		table.insert(Objects.Entities, Object)
-	elseif Name == "Drakobloxxer" then
-		if Toggles.EntityESPToggle.Value then Functions.AddESP({ Object = Object, Text = "Drakobloxxer", Color = Options.EntityESPColor.Value }, true) end
+		if Toggles.EntityESPToggle.Value and Options.EntityESPOptions.Value["Grumble"] then Functions.AddESP({ Object = Object, Text = "Grumble", Color = Options.EntityESPColor.Value }, true) end
 		table.insert(Objects.Entities, Object)
 	elseif Name == "LiveEntityBramble" then
-		if Toggles.EntityESPToggle.Value then Functions.AddESP({ Object = Object, Text = "Bramble", Color = Options.EntityESPColor.Value }, true) end
+		if Toggles.EntityESPToggle.Value and Options.EntityESPOptions.Value["Bramble"] then Functions.AddESP({ Object = Object, Text = "Bramble", Color = Options.EntityESPColor.Value }, true) end
 		table.insert(Objects.Entities, Object)
 	elseif Name == "Groundskeeper" then
-		if Toggles.EntityESPToggle.Value then Functions.AddESP({ Object = Object, Text = "Groundskeeper", Color = Options.EntityESPColor.Value }, true) end
+		if Toggles.EntityESPToggle.Value and Options.EntityESPOptions.Value["Groundskeeper"] then Functions.AddESP({ Object = Object, Text = "Groundskeeper", Color = Options.EntityESPColor.Value }, true) end
 		if Toggles.NotifyEntities.Value and Options.EntityList.Value["Groundskeeper"] then
 			local ED = Entities["Groundskeeper"]
 			Functions.Notify({ Title = ED.NotifyMessage.Title, Body = ED.NotifyMessage.Body, Image = EntityIcons["Groundskeeper"] })
@@ -3701,7 +3761,7 @@ Functions.HandleObject = function(Object)
 				Part.CanTouch = false
 			end
 		end
-		if Toggles.EntityESPToggle.Value then Functions.AddESP({ Object = Object, Text = "Figure", Color = Options.EntityESPColor.Value }, true) end
+		if Toggles.EntityESPToggle.Value and Options.EntityESPOptions.Value["Figure"] then Functions.AddESP({ Object = Object, Text = "Figure", Color = Options.EntityESPColor.Value }, true) end
 		table.insert(Objects.Entities, Object)
 		if Toggles.RemoveFigure.Value and Functions.CheckCompatability({"isnetworkowner"}) then
 			if Floor == "Mines" then
@@ -3883,7 +3943,7 @@ end)
 
 Globals.ObjectQueue = {}
 local AllowedInstances = {
-	Lava=true, GoldPile=true, KeyObtain=true, KeyObtainFake=true, Drakobloxxer=true, FuseObtain=true,
+	Lava=true, GoldPile=true, KeyObtain=true, Drakobloxxer=true, FuseObtain=true,
 	MinesGenerator=true, JeffTheKiller=true, Snare=true, FakeDoor=true, DoorFake=true, SideroomSpace=true,
 	ChestBox=true, ChestBoxLocked=true, Chest_Vine=true, Locker_Small_Locked=true, Toolbox=true,
 	Toolbox_Locked=true, Wardrobe=true, ["Wardrobe-FOOLS26"]=true, Toolshed=true, Toolshed_Small=true,
@@ -4298,7 +4358,7 @@ Connections.EntityHandler = Services.Workspace.ChildAdded:Connect(function(Entit
 	end
 
 	if Entity.Name ~= "GloombatSwarm" then
-		if Toggles.EntityESPToggle.Value then
+		if Toggles.EntityESPToggle.Value and Options.EntityESPOptions.Value[Alias] then
 			if Entity.Name == "MonumentEntity" then
 				Functions.AddESP({ Object = Entity.Top, Text = Alias, Color = Options.EntityESPColor.Value })
 			else
