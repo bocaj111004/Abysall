@@ -2498,7 +2498,7 @@ Groupboxes.Floors_Farming:AddButton({
 
 Groupboxes.Floors_Farming:AddDivider()
 Groupboxes.Floors_Farming:AddButton({
-	Text = "Death Farm",
+	Text = "Start Death Farm",
 	DoubleClick = true,
 	Tooltip = "Automatically farms deaths, joining new runs.",
 	Func = function()
@@ -2509,7 +2509,7 @@ Groupboxes.Floors_Farming:AddButton({
 	DisabledTooltip = Globals.ImcompatibleMessage
 })
 Groupboxes.Floors_Farming:AddButton({
-	Text = "Copy Loadstring",
+	Text = "Copy Death Farm Loadstring",
 	DoubleClick = false,
 	Tooltip = "Copies the death farm loadstring to your clipboard.",
 	Func = function()
