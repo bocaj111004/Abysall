@@ -242,7 +242,6 @@ local LocalPlayer = Services.Players.LocalPlayer
 local RemotesFolder   = Services.ReplicatedStorage:FindFirstChild("RemotesFolder")
 local LiveModifiers   = Services.ReplicatedStorage:FindFirstChild("LiveModifiers")
 local FloorReplicated = Services.ReplicatedStorage:FindFirstChild("FloorReplicated")
-local ModulesShared = Services.ReplicatedStorage:FindFirstChild("ModulesShared")
 local CurrentRooms    = Services.Workspace:FindFirstChild("CurrentRooms")
 local Drops           = Services.Workspace:FindFirstChild("Drops")
 local GameData        = Services.ReplicatedStorage:WaitForChild("GameData")
@@ -251,9 +250,6 @@ local LatestRoom      = GameData:WaitForChild("LatestRoom")
 local FinishedLoadingRoom = GameData:FindFirstChild("FinishedLoadingRoom")
 if FinishedLoadingRoom then
 	FinishedLoadingRoom:Destroy()
-end
-if not ModulesShared then
-	ModulesShared = Instance.new("Folder")
 end
 
 local function GetHiddenContainer()
@@ -1521,8 +1517,8 @@ Toggles.RemoveDread:OnChanged(function(Value)
 	end
 end)
 Toggles.RemoveSurge:OnChanged(function(Value)
-	if Modules.Surge then
-		Modules.Surge.Name = (Value and "SurgeCheck_Disabled" or "SurgeCheck")
+	if Globals.SurgeFrame then
+		Globals.SurgeFrame.Name = (Value and "SurgeVignette_Disabled" or "SurgeVignette")
 	end
 end)
 
@@ -2585,7 +2581,6 @@ Modules = {
 	Glitch         = ClientModules.EntityModules.Glitch,
 	Shade          = ClientModules.EntityModules.Shade,
 	Void           = ClientModules.EntityModules:FindFirstChild("Void"),
-	Surge = ModulesShared:FindFirstChild("SurgeCheck"),
 	SpiderJumpscare = nil,
 	A90            = nil,
 	Screech        = nil,
@@ -2960,6 +2955,14 @@ Functions.HandleCharacter = function(NewCharacter)
 
 	local RayParams = RaycastParams.new()
 	RayParams.FilterType = Enum.RaycastFilterType.Exclude
+
+	local MainFrame = Globals.MainUI:FindFirstChild("MainFrame")
+	if MainFrame and MainFrame:FindFirstChild("SurgeVignette") then
+		Globals.SurgeFrame = MainFrame.SurgeVignette
+		if Toggles.RemoveSurge.Value then
+			Globals.SurgeFrame.Name = "SurgeVignette_Disabled"
+		end
+	end
 
 	Connections.MainHandler = Services.RunService.RenderStepped:Connect(function()
 		if Services.Workspace:FindFirstChild("Camera") then
@@ -3605,7 +3608,7 @@ Functions.HandleObject = function(Object)
 		if Name == "LotusHolder" or Name == "LotusPetalPickup" then
 			Object.Handle:GetPropertyChangedSignal("LocalTransparencyModifier"):Connect(function()
 				Abysall.ESPLibrary:RemoveESP(Object)
-				Abysall.ESPLibrary:BlacklistESP(Object)
+				Functions.BlacklistESP(Object)
 			end)
 		end
 
