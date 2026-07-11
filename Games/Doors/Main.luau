@@ -1968,7 +1968,7 @@ Toggles.EntityESPToggle:OnChanged(function(Value)
 			local Label = EntityESPLabels[Object.Name]
 			if not Label and Entities[Object.Name] then Label = Entities[Object.Name].Alias end
 			if Label and Options.EntityESPOptions.Value[Label] then
-				Functions.AddESP({ Object = Object, Text = Label, Color = Options.EntityESPColor.Value }, not (NodeEntities[Label] and true or false))
+				Functions.AddESP({ Object = Object, Text = Label, Color = Options.EntityESPColor.Value }, NodeEntities[Label] ~= true)
 			else
 				Functions.RemoveESP(Object)
 			end
@@ -1984,7 +1984,7 @@ Options.EntityESPOptions:OnChanged(function(Value)
 			local Label = EntityESPLabels[Object.Name]
 			if not Label and Entities[Object.Name] then Label = Entities[Object.Name].Alias end
 			if Label and Options.EntityESPOptions.Value[Label] then
-				Functions.AddESP({ Object = Object, Text = Label, Color = Options.EntityESPColor.Value }, not (NodeEntities[Label] and true or false))
+				Functions.AddESP({ Object = Object, Text = Label, Color = Options.EntityESPColor.Value }, NodeEntities[Label] ~= true)
 			else
 				Functions.RemoveESP(Object)
 			end
