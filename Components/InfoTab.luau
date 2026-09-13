@@ -1,13 +1,23 @@
 return function(Window)
     local LatestChangelog = {
-        "11/7/2026",
-        "<font color='rgb(0, 255, 0)'>+ Added Entity ESP Selection</font>",
-		"<font color='rgb(0, 255, 0)'>+ Added Item Notifier</font>",
-		"<font color='rgb(0, 255, 0)'>+ Added Remove Surge</font>",
-		"<font color='rgb(0, 255, 0)'>+ Added Death Farm</font>",
-		"<font color='rgb(0, 255, 0)'>+ Fixed Some Broken Features (Bypass Eyes, etc)</font>",
-    }
+        "5/9/2026",
 
+		-- Green = Added
+		"<font color='rgb(0, 255, 0)'>+ Added StemsEntity (Balls), Noise & Creak entities</font>",
+		"<font color='rgb(0, 255, 0)'>+ Added DinkyLamp, BottleCrate, GweenSodaPack, BrokenMonitor & JerryCan</font>",
+		"<font color='rgb(0, 255, 0)'>+ Added Honcho support</font>",
+		"<font color='rgb(0, 255, 0)'>+ Added Stairwell prompt ignores</font>",
+		"<font color='rgb(0, 255, 0)'>+ Added Herobrine</font>",
+
+
+		"<font color='rgb(255, 255, 0)'>~ Updated Sally notification message</font>",
+		"<font color='rgb(255, 255, 0)'>~ Expanded ItemNames & Entities lists</font>",
+		"<font color='rgb(255, 255, 0)'>~ Forgot to add supporter list so i could add it later</font>",
+
+
+        -- Red = Removed
+        "<font color='rgb(255, 0, 0)'>- Removed FireBacon</font>",
+    }
     local function CloneReference(Object)
         if Abysall and Abysall.Environment.cloneref then
             return Abysall.Environment.cloneref(Object)
@@ -46,6 +56,19 @@ return function(Window)
     User:AddLabel("ID: " .. LocalPlayer.Name, true)
     User:AddLabel("Total Executions: " .. (Abysall.TotalExecutions and Abysall.TotalExecutions or "N/A"), true)
 
+	local CreditsList = {
+		"<font color='rgb(0, 255, 255)'>CookieMonster — Owner of the Continued Script</font>",
+		"<font color='rgb(255, 165, 0)'>FireBacon — Owner of the Discontinued Script</font>",
+		"<font color='rgb(197, 63, 132)'>Rhyan57 — Provided the Infinite Crucifix</font>",
+		"<font color='rgb(241, 106, 212)'>Abbas - Basicly a developer</font>",
+		"<font color='rgb(50, 205, 50)'>" .. LocalPlayer.Name .. " — For Using This Script</font>"
+	}
+
+	local Credits = InfoTab:AddRightGroupbox("Credits")
+	for Index, Credit in pairs(CreditsList) do
+		Credits:AddLabel(Credit, true)
+	end
+
     local Changelog = InfoTab:AddRightGroupbox("Changelog")
     for Index, Change in pairs(LatestChangelog) do
         Changelog:AddLabel(Change, true)
@@ -66,9 +89,13 @@ return function(Window)
         Executor:AddLabel(Result, true)
     end
 
+	local Scripts = InfoTab:AddLeftGroupbox("Scripts")
+	Scripts:AddButton("InfiniteYield",         { Text = "Infinite Yield",           Default = false, Tooltip = "Runs infinite yield.", 	Func = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))() end })
+
+
     local Community = InfoTab:AddLeftGroupbox("Community")
     Community:AddButton("Copy Discord Invite", function()
-	    toclipboard("https://dsc.gg/abysallhub")
+	    toclipboard("https://dsc.gg/abysallhubcontinued")
 	    Library:Notify("Discord invite copied.")
     end)
 end
